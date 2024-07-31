@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <vector>
 #include <cstring>
+#include <Windows.h>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -195,7 +196,7 @@ private:
         if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
             // Message is important enought to show
             std::string debug_msg = "Validation layer: " + (std::string)pCallbackData->pMessage;
-            std::runtime_error(debug_msg.c_str());
+            throw std::runtime_error(debug_msg.c_str());
         }
 
         return VK_FALSE;
