@@ -191,11 +191,13 @@ private:
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData
     ) {
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+        std::string debug_msg = "validation layer: " + (std::string)pCallbackData->pMessage;
+        std::cerr << debug_msg << std::endl;
+        OutputDebugStringA(debug_msg.c_str());
 
         if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
             // Message is important enought to show
-            std::string debug_msg = "Validation layer: " + (std::string)pCallbackData->pMessage;
+            debug_msg = "validation layer ERROR: " + (std::string)pCallbackData->pMessage;
             throw std::runtime_error(debug_msg.c_str());
         }
 
