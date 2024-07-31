@@ -64,12 +64,18 @@ public:
 
 private:
     void initWindow() {
-        /* Initialize glfw window */
+        /* Initialize the GLFW window */
+        // Initialize GLFW libary
         glfwInit();
 
+        // Inform GLFW to not create an OpenGL context
+        // GLFW was originally designed to create an OpenGL context
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+        // Disable handling resized windows
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
+        // Create the GLFW window
         window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan window", nullptr, nullptr);
     }
     
@@ -105,11 +111,12 @@ private:
 
     void checkExtensionSupport() {
         /* Checking for extension support */
+        // Count the amount of supported extensions
         uint32_t extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
+        // Query extension details
         std::vector<VkExtensionProperties> extensions(extensionCount);
-
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
         std::cout << "available extensions: " << std::endl;
@@ -124,6 +131,8 @@ private:
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
+        // Fill in some information about the application
+        // This data is optional.
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = "Triangle";
@@ -132,13 +141,18 @@ private:
         appInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
 
+        // Informs the Vulkan driver which global extensions and
+        // validation layers we want to use
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
 
+        // Add an extension to inferface with the window system for GLFW
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
 
+        // This function returns an array of required Vulkan instance extensions
+        // for creating Vulkan surfaces on GLFW windows
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
         createInfo.enabledExtensionCount = glfwExtensionCount;
@@ -165,6 +179,7 @@ private:
             createInfo.pNext = nullptr;
         }
 
+        // Create an instance
         if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
             throw std::runtime_error("vkCreateInstance ERROR: failed to create instance!");
         }
