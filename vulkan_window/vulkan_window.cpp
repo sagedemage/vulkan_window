@@ -25,13 +25,14 @@
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
+// Enable the standard diagnostic layers provided by the Vulkan SDK
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
 #define NDEBUG
 
-#ifndef NDEBUG
+#ifndef NDEBUG  // not debug
 const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
@@ -118,7 +119,7 @@ private:
     }
 
     void createInstance() {
-        /* Creating instance */
+        /* Create instance */
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
         }
@@ -143,12 +144,15 @@ private:
         createInfo.enabledExtensionCount = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
 
+        // Retreive the required list of extensions
         auto extensions = getRequiredExtensions();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
+        // Modify the VkInstanceCreateInfo struct to include the validation layer names
+        // if they are enabled
         if (enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
             createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -169,12 +173,16 @@ private:
     }
 
     bool checkValidationLayerSupport() {
+        /* Checks if all of the requested layers are available */
+        // List all of the available layers
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
+        // Check if all of the layers in the validationLayers exist in the
+        // availableLayers list
         for (const char* layerName : validationLayers) {
             bool layerFound = false;
 
@@ -194,6 +202,8 @@ private:
     }
 
     std::vector<const char*> getRequiredExtensions() {
+        /* Retreive the required list of extensions based on if the
+        validation layers are enabled or disabled */
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -213,6 +223,7 @@ private:
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData
     ) {
+        /* Debug to the console for validation layers */
         std::string debug_msg = "validation layer: " + (std::string)pCallbackData->pMessage;
         std::cerr << debug_msg << std::endl;
         OutputDebugStringA(debug_msg.c_str());
@@ -231,9 +242,11 @@ private:
             return;
         }
 
+        // Fill in the details about the messenger and its callback
         VkDebugUtilsMessengerCreateInfoEXT createInfo{};
         populateDebugMessengerCreateInfo(createInfo);
 
+        // Create the extension object if it is available
         if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
             throw std::runtime_error("failed to set up debug messenger!");
         }
@@ -242,6 +255,8 @@ private:
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, 
         const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
         const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+        /* Proxy function to create the debug messenger */
+        // Looks up the address of the VkDebugUtilsMessengerEXT object
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
         
         if (func != nullptr) {
@@ -255,6 +270,7 @@ private:
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, 
         VkDebugUtilsMessengerEXT debugMessenger, 
         const VkAllocationCallbacks* pAllocator) {
+        /* Proxy function to destroy the debug messenger */
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, 
             "vkDestroyDebugUtilsMessengerEXT");
 
@@ -264,6 +280,7 @@ private:
     }
 
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+        /* Fill in the details about the messenger and its callback to the structure */
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
