@@ -49,6 +49,7 @@ class TriangleApplication {
         std::optional<uint32_t> graphicsFamily;
 
         bool isComplete() {
+            // Checks if the graphicsFamily object contains a value
             return graphicsFamily.has_value();
         }
     };
@@ -62,6 +63,7 @@ public:
 
 private:
     void initWindow() {
+        /* Initialize glfw window */
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -71,6 +73,7 @@ private:
     }
     
     void initVulkan() {
+        /* Initialize Vulkan */
         createInstance();
         setupDebugMessenger();
         pickPhysicalDevice();
@@ -78,12 +81,14 @@ private:
     }
     
     void mainLoop() {
+        /* Main game loop */
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
         }
     }
     
     void cleanUp() {
+        /* Clean up resources */
         vkDestroyDevice(device, nullptr);
 
         if (enableValidationLayers) {
@@ -271,6 +276,7 @@ private:
     }
 
     void pickPhysicalDevice() {
+        // Count the number of graphics cards with Vulkan support
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -278,6 +284,7 @@ private:
             throw std::runtime_error("failed to find GPUs with Vulkan support!");
         }
 
+        // Allocate an array to hold all of the VkPhysicalDevice handles
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
@@ -295,21 +302,25 @@ private:
     }
 
     bool isDeviceSuitable(VkPhysicalDevice device) {
+        /* Queue family lookup function to ensure the device can process the
+        commands to use */
         QueueFamilyIndices indices = findQueueFamilies(device);
 
         return indices.isComplete();
     }
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
-        /* Logic to find queue family indices to populate struct with */
+        /* Logic to find queue family indices to populate the struct with */
         QueueFamilyIndices indices;
 
+        // The process to retreive the list of queue families
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
+        // Find at lest one queue family that supports VK_QUEUE_GRAPHICS_BIT
         int i = 0;
         for (const auto& queueFamily : queueFamilies) {
             if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
@@ -327,7 +338,7 @@ private:
     }
 
     void createLogicalDevice() {
-        // Specify queues to be created
+        // Specify the queues to be created
         QueueFamilyIndices indicies = findQueueFamilies(physicalDevice);
 
         VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -348,6 +359,7 @@ private:
         createInfo.queueCreateInfoCount = 1;
         createInfo.pEnabledFeatures = &deviceFeatures;
 
+        // Specify the extensions and validation layers
         createInfo.enabledExtensionCount = 0;
         if (enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
