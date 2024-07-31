@@ -26,6 +26,8 @@ const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
+#define NDEBUG
+
 #ifndef NDEBUG
 const bool enableValidationLayers = false;
 #else
@@ -192,6 +194,8 @@ private:
 
         if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
             // Message is important enought to show
+            std::string debug_msg = "Validation layer: " + (std::string)pCallbackData->pMessage;
+            std::runtime_error(debug_msg.c_str());
         }
 
         return VK_FALSE;
