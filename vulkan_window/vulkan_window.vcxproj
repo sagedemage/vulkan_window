@@ -143,7 +143,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="triangle_application.cpp" />
     <ClCompile Include="vulkan_window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="triangle_application.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
