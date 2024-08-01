@@ -4,8 +4,11 @@
 /* Third party libraries */
 #include <vulkan/vulkan.h>
 
+#define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
 
 #define GLM_FORCE_RADIUS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -21,6 +24,7 @@
 #include <Windows.h>
 #include <map>
 #include <optional>
+#include <set>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -45,10 +49,13 @@ class TriangleApplication
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device;
     VkQueue graphicsQueue;
+    VkSurfaceKHR surface;
+    VkQueue presentQueue;
 
     struct QueueFamilyIndices
     {
         std::optional<uint32_t> graphicsFamily;
+        std::optional<uint32_t> presentFamily;
 
         bool isComplete();
     };
@@ -82,6 +89,7 @@ private:
     bool isDeviceSuitable(VkPhysicalDevice device);
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     void createLogicalDevice();
+    void createSurface();
 };
 
 #endif // TRIANGLE_APPLICATION_H

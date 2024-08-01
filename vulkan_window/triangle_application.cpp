@@ -3,8 +3,9 @@
 
 bool TriangleApplication::QueueFamilyIndices::isComplete()
 {
-    // Checks if the graphicsFamily object contains a value
-    return graphicsFamily.has_value();
+    // Checks if the graphicsFamily and presentFamily objects
+    // contain a value
+    return graphicsFamily.has_value() && presentFamily.has_value();
 }
 
 void TriangleApplication::run()
@@ -37,6 +38,7 @@ void TriangleApplication::initVulkan()
     /* Initialize Vulkan */
     createInstance();
     setupDebugMessenger();
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
 }
@@ -59,6 +61,8 @@ void TriangleApplication::cleanUp()
     {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
+
+    vkDestroySurfaceKHR(instance, surface, nullptr);
 
     vkDestroyInstance(instance, nullptr);
 
@@ -350,6 +354,14 @@ TriangleApplication::QueueFamilyIndices TriangleApplication::findQueueFamilies(V
             indices.graphicsFamily = i;
         }
 
+        // Look for a queue family that is capable of presenting to the window surface
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+
+        if (presentSupport) {
+            indices.presentFamily = i;
+        }
+
         if (indices.isComplete())
         {
             break;
@@ -364,15 +376,26 @@ TriangleApplication::QueueFamilyIndices TriangleApplication::findQueueFamilies(V
 void TriangleApplication::createLogicalDevice()
 {
     // Specify the queues to be created
-    QueueFamilyIndices indicies = findQueueFamilies(physicalDevice);
+    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = indicies.graphicsFamily.value();
-    queueCreateInfo.queueCount = 1;
+    // Set multiple VkDeviceQueueCreateInfo structs to create a queue
+    // from both families which are mandatory for the required queues
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    std::set<uint32_t> uniqueQueueFamilies = {
+        indices.graphicsFamily.value(),
+        indices.presentFamily.value()
+    };
 
     float queuePriority = 1.0f;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    
+    for (uint32_t queueFamily : uniqueQueueFamilies) {
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = queueFamily;
+        queueCreateInfo.queueCount = 1;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+        queueCreateInfos.push_back(queueCreateInfo);
+    }
 
     // Specify the device features to be used
     VkPhysicalDeviceFeatures deviceFeatures{};
@@ -380,8 +403,8 @@ void TriangleApplication::createLogicalDevice()
     // Create the logical device
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
-    createInfo.queueCreateInfoCount = 1;
+    createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
 
     // Specify the extensions and validation layers
@@ -402,6 +425,14 @@ void TriangleApplication::createLogicalDevice()
         throw std::runtime_error("failed to create logical device!");
     }
 
-    // Retreving queue handles
-    vkGetDeviceQueue(device, indicies.graphicsFamily.value(), 0, &graphicsQueue);
+    // Retrieve queue handles
+    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+    vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+}
+
+void TriangleApplication::createSurface() {
+    // Cross platform way to create the window surface via GLFW
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create window surface!");
+    }
 }
