@@ -188,7 +188,7 @@ bool TriangleApplication::checkValidationLayerSupport()
 
 std::vector<const char*> TriangleApplication::getRequiredExtensions()
 {
-    /* Retreive the required list of extensions based on if the
+    /* Retrieve the required list of extensions based on if the
     validation layers are enabled or disabled */
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
