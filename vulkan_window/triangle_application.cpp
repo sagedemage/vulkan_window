@@ -374,7 +374,7 @@ void TriangleApplication::createLogicalDevice()
     float queuePriority = 1.0f;
     queueCreateInfo.pQueuePriorities = &queuePriority;
 
-    // Specify used device features
+    // Specify the device features to be used
     VkPhysicalDeviceFeatures deviceFeatures{};
 
     // Create the logical device
