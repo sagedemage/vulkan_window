@@ -26,12 +26,22 @@
 #include <optional>
 #include <set>
 
+#include <cstdint> // Required for uint32_t
+#include <limits> // Required for std::numeric_limits
+#include <algorithm> // Required for std::clamp
+
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
 // Enable the standard diagnostic layers provided by the Vulkan SDK
 const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation" };
+    "VK_LAYER_KHRONOS_validation"
+};
+
+// Declare a list of required device extensions
+const std::vector<const char*> deviceExtensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
 
 #define NDEBUG
 
@@ -43,6 +53,7 @@ const bool enableValidationLayers = true;
 
 class TriangleApplication
 {
+private:
     GLFWwindow* window;
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -51,6 +62,8 @@ class TriangleApplication
     VkQueue graphicsQueue;
     VkSurfaceKHR surface;
     VkQueue presentQueue;
+    VkSwapchainKHR swapChain;
+    std::vector<VkImage> swapChainImages;
 
     struct QueueFamilyIndices
     {
@@ -60,10 +73,12 @@ class TriangleApplication
         bool isComplete();
     };
 
-public:
-    void run();
+    struct SwapChainSupportDetails {
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
 
-private:
     void initWindow();
     void initVulkan();
     void mainLoop();
@@ -90,6 +105,15 @@ private:
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     void createLogicalDevice();
     void createSurface();
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    void createSwapChain();
+
+public:
+    void run();
 };
 
 #endif // TRIANGLE_APPLICATION_H

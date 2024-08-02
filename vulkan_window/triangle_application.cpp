@@ -41,6 +41,7 @@ void TriangleApplication::initVulkan()
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
+    createSwapChain();
 }
 
 void TriangleApplication::mainLoop()
@@ -55,6 +56,8 @@ void TriangleApplication::mainLoop()
 void TriangleApplication::cleanUp()
 {
     /* Clean up resources */
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
+
     vkDestroyDevice(device, nullptr);
 
     if (enableValidationLayers)
@@ -330,7 +333,16 @@ bool TriangleApplication::isDeviceSuitable(VkPhysicalDevice device)
     commands to use */
     QueueFamilyIndices indices = findQueueFamilies(device);
 
-    return indices.isComplete();
+    bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+    // Verify swap chain support is adequate
+    bool swapChainAdequate = false;
+    if (extensionsSupported) {
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+    }
+
+    return indices.isComplete() && extensionsSupported && swapChainAdequate;
 }
 
 TriangleApplication::QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice device)
@@ -407,8 +419,12 @@ void TriangleApplication::createLogicalDevice()
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    // Specify the extensions and validation layers
-    createInfo.enabledExtensionCount = 0;
+    // Enabling device extensions
+    // Using a swapchain requires enabling the VK_KHR_swapchain
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
+    // Specify the validation layers for the logical device if the validation layers is enabled
     if (enableValidationLayers)
     {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -435,4 +451,215 @@ void TriangleApplication::createSurface() {
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }
+}
+
+bool TriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    /* Enumerate the extensions and check if all of the required
+    extensions are included in them */
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+    for (const auto& extension : availableExtensions) {
+        requiredExtensions.erase(extension.extensionName);
+    }
+
+    return requiredExtensions.empty();
+}
+
+TriangleApplication::SwapChainSupportDetails TriangleApplication::querySwapChainSupport(VkPhysicalDevice device) {
+    TriangleApplication::SwapChainSupportDetails details;
+
+    // Query basic surface capabilities
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+
+    // Querying the supported surface formats
+    uint32_t formatCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+
+    if (formatCount != 0) {
+        details.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+    }
+
+    // Querying the supported presentation modes
+    uint32_t presentModeCount;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+
+    if (presentModeCount != 0) {
+        details.presentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+    }
+
+    return details;
+}
+
+VkSurfaceFormatKHR TriangleApplication::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    // Go through a list to find if the preferred combination is available
+    //
+    // VK_COLOR_SPACE_SRGB_NONLINEAR_KHR: SRGB color space is supported
+    // or not supported
+    //
+    // VK_FORMAT_B8G8R8A8_SRGB: store the BGRA channels in that order
+    // with each channels containing a 8 bit unsigned integer.
+    // This would result in a total of 32 bits per pixel.
+    for (const auto& availableFormat : availableFormats) {
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+            availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            return availableFormat;
+        }
+    }
+
+    return availableFormats[0];
+}
+
+VkPresentModeKHR TriangleApplication::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    // VK_PRESENT_MODE_MAILBOX_KHR: This helps to avoid tearing and maintain a low letency.
+    // Use this if energy is not an issue.
+    //
+    // VK_PRESENT_MODE_FIFO_KHR: If energy usage is an issue, use this.
+    // This is recommended for mobile devices.
+    for (const auto& availablePresentMode : availablePresentModes) {
+        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+            return availablePresentMode;
+        }
+    }
+
+    return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+VkExtent2D TriangleApplication::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+    // The swap extent is the resolution of the swap chain images and it's usually always exactly
+    // equal to the resolution of the window that the program draws in pixels.
+    //
+    // Using a high CPI display like Apple's Retina display), screen coordinates don't correspond to pixels.
+    // The issue is that the resolution of the window in pixels will be larger than the resolution in screen
+    // coordinates.
+    // The orginal WIDTH and HEIGHT variables will not work.
+    // The glfwGetFramebufferSize function is required to query the resolution of the window in pixels.
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+        return capabilities.currentExtent;
+    }
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
+    VkExtent2D actualExtent = {
+        static_cast<uint32_t>(width),
+        static_cast<uint32_t>(height)
+    };
+
+    actualExtent.width = std::clamp(
+        actualExtent.width,
+        capabilities.minImageExtent.width,
+        capabilities.maxImageExtent.width
+    );
+
+    actualExtent.height = std::clamp(
+        actualExtent.height,
+        capabilities.minImageExtent.height,
+        capabilities.maxImageExtent.height
+    );
+
+    return actualExtent;
+}
+
+void TriangleApplication::createSwapChain() {
+    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
+    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
+    VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
+    VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+
+    // Decide how many images the program would like to have in the swap chain.
+    // Request one more image than the minimum to prevent waiting on the driver
+    // to complete internal operations before we can get another image to render to.
+    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+
+    // Make sure the program does not exceed the maximum number of images while doing this.
+    // 0 means there is no maximum.
+    if (swapChainSupport.capabilities.maxImageCount > 0 &&
+        imageCount > swapChainSupport.capabilities.maxImageCount) {
+        imageCount = swapChainSupport.capabilities.maxImageCount;
+    }
+
+    // Specify the details of the swap chain
+    VkSwapchainCreateInfoKHR createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    createInfo.surface = surface;
+
+    // Specify the details of the swap chain images
+    createInfo.minImageCount = imageCount;
+    createInfo.imageFormat = surfaceFormat.format;
+    createInfo.imageColorSpace = surfaceFormat.colorSpace;
+    createInfo.imageExtent = extent;
+    createInfo.imageArrayLayers = 1;
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    // Handle swap chain images that will be used across multiple queue families.
+    //
+    // VK_SHARING_MODE_EXCLUSIVE: An image is owned by one queue family at a time
+    // and this requires explicit ownership tranfers.
+    // This option offers the best performance.
+    //
+    // VK_SHARING_MODE_CONCURRENT: Images can be used across multiple queue faimilies without
+    // explicit onwership tranfers.
+
+    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+    uint32_t queueFamilyIndices[] = {
+        indices.graphicsFamily.value(),
+        indices.presentFamily.value()
+    };
+
+    if (indices.graphicsFamily != indices.presentFamily) {
+        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        createInfo.queueFamilyIndexCount = 2;
+        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    }
+    else {
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 0; // Optional
+        createInfo.pQueueFamilyIndices = nullptr; // Optional
+    }
+
+    // Specify the transformation to be applied to images in the
+    // swap chain if it is supported
+    createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+
+    // Specify if the apha channel should be used for blending with other windows in the window system.
+    // It is a good idea to ignore the alpha channel via VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR.
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+    // Specify the presentation engine.
+    // Enabling clipping provides the program the best performace.
+    createInfo.presentMode = presentMode;
+    createInfo.clipped = VK_TRUE;
+
+    // Existing non-retried swapchain currently associated with the surface
+    createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+    // Create the swap chain
+    if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create swap chain!");
+    }
+
+    // Retrieve the swap chain images
+    // 1. First query the final number of images via vkGetSwapchainImagesKHR.
+    // 2. Resize the container.
+    // 3. Retrieve the handles via the vkGetSwapchainImagesKHR again.
+    vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+    swapChainImages.resize(imageCount);
+    vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+
+    // Store the format and extent for the swap chain images
+    VkSwapchainKHR swapChain;
+    std::vector<VkImage> swapChainImages;
+    VkFormat swapChainImageFormat;
+    VkExtent2D swapChainExtent;
+
+    swapChainImageFormat = surfaceFormat.format;
+    swapChainExtent = extent;
 }
