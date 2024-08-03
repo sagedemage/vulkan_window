@@ -25,7 +25,6 @@ Checks:   '
           -readability-identifier-length,
           -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
           -llvm-header-guard,
-          -cert-err58-cpp
           '
 
 WarningsAsErrors: true

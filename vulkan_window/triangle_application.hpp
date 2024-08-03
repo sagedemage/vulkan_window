@@ -35,11 +35,11 @@ const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
 // Enable the standard diagnostic layers provided by the Vulkan SDK
-const std::vector<const char*> VALIDATION_LAYERS = {
+const std::array<const char*, 1> VALIDATION_LAYERS = {
     "VK_LAYER_KHRONOS_validation"};
 
 // Declare a list of required device extensions
-const std::vector<const char*> DEVICE_EXTENSIONS = {
+const std::array<const char*, 1> DEVICE_EXTENSIONS = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 #define NDEBUG
