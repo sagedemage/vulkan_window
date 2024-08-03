@@ -23,11 +23,13 @@ Checks:   '
           -cppcoreguidelines-pro-type-reinterpret-cast,
           -readability-make-member-function-const,
           -readability-identifier-length,
-          -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+          -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+          -llvm-header-guard,
+          -cert-err58-cpp
           '
 
 WarningsAsErrors: true
-HeaderFilterRegex: ''
+HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle: 'file'
 CheckOptions:
