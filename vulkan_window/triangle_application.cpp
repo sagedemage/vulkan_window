@@ -387,7 +387,7 @@ void TriangleApplication::CreateLogicalDevice() {
             "Indices's graphics and present Families contain no value!");
     }
 
-    float queue_priority = 1.0f;
+    float queue_priority = 1.0F;
 
     for (uint32_t queue_family : unique_queue_families) {
         VkDeviceQueueCreateInfo queue_create_info{};
