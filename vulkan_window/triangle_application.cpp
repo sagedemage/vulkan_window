@@ -565,7 +565,7 @@ VkExtent2D TriangleApplication::ChooseSwapExtent(
     glfwGetFramebufferSize(window, &width, &height);
 
     VkExtent2D actual_extent = {static_cast<uint32_t>(width),
-                               static_cast<uint32_t>(height)};
+                                static_cast<uint32_t>(height)};
 
     actual_extent.width =
         std::clamp(actual_extent.width, capabilities.minImageExtent.width,
@@ -642,7 +642,7 @@ void TriangleApplication::CreateSwapChain() {
         create_info.pQueueFamilyIndices = queue_family_indices.data();
     } else {
         create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        create_info.queueFamilyIndexCount = 0;     // Optional
+        create_info.queueFamilyIndexCount = 0;      // Optional
         create_info.pQueueFamilyIndices = nullptr;  // Optional
     }
 
