@@ -54,21 +54,21 @@ class TriangleApplication {
    private:
     GLFWwindow* window{};
     VkInstance instance{};
-    VkDebugUtilsMessengerEXT debugMessenger{};
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkDebugUtilsMessengerEXT debug_messenger{};
+    VkPhysicalDevice physical_device = VK_NULL_HANDLE;
     VkDevice device{};
-    VkQueue graphicsQueue{};
+    VkQueue graphics_queue{};
     VkSurfaceKHR surface{};
-    VkQueue presentQueue{};
-    VkSwapchainKHR swapChain{};
-    std::vector<VkImage> swapChainImages;
-    std::vector<VkImageView> swapChainImageViews;
-    VkFormat swapChainImageFormat{};
-    VkExtent2D swapChainExtent{};
+    VkQueue present_queue{};
+    VkSwapchainKHR swap_chain{};
+    std::vector<VkImage> swap_chain_images;
+    std::vector<VkImageView> swap_chain_image_views;
+    VkFormat swap_chain_image_format{};
+    VkExtent2D swap_chain_extent{};
 
     struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
+        std::optional<uint32_t> graphics_family;
+        std::optional<uint32_t> present_family;
 
         bool IsComplete();
     };
@@ -76,7 +76,7 @@ class TriangleApplication {
     struct SwapChainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities{};
         std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
+        std::vector<VkPresentModeKHR> present_modes;
     };
 
     void InitWindow();

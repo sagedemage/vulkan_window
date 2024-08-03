@@ -4,7 +4,7 @@
 bool TriangleApplication::QueueFamilyIndices::IsComplete() {
     // Checks if the graphicsFamily and presentFamily objects
     // contain a value
-    return graphicsFamily.has_value() && presentFamily.has_value();
+    return graphics_family.has_value() && present_family.has_value();
 }
 
 void TriangleApplication::Run() {
@@ -50,16 +50,16 @@ void TriangleApplication::MainLoop() {
 
 void TriangleApplication::CleanUp() {
     /* Clean up resources */
-    for (auto* image_view : swapChainImageViews) {
+    for (auto* image_view : swap_chain_image_views) {
         vkDestroyImageView(device, image_view, nullptr);
     }
 
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
+    vkDestroySwapchainKHR(device, swap_chain, nullptr);
 
     vkDestroyDevice(device, nullptr);
 
     if (ENABLE_VALIDATION_LAYERS) {
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        DestroyDebugUtilsMessengerEXT(instance, debug_messenger, nullptr);
     }
 
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -233,7 +233,7 @@ void TriangleApplication::SetupDebugMessenger() {
 
     // Create the extension object if it is available
     if (CreateDebugUtilsMessengerEXT(instance, &create_info, nullptr,
-                                     &debugMessenger) != VK_SUCCESS) {
+                                     &debug_messenger) != VK_SUCCESS) {
         throw std::runtime_error("failed to set up debug messenger!");
     }
 }
@@ -298,12 +298,12 @@ void TriangleApplication::PickPhysicalDevice() {
     // Device suitability checks
     for (const auto& device : devices) {
         if (IsDeviceSuitable(device)) {
-            physicalDevice = device;
+            physical_device = device;
             break;
         }
     }
 
-    if (physicalDevice == VK_NULL_HANDLE) {
+    if (physical_device == VK_NULL_HANDLE) {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
 }
@@ -321,7 +321,7 @@ bool TriangleApplication::IsDeviceSuitable(VkPhysicalDevice device) {
         SwapChainSupportDetails swap_chain_support =
             QuerySwapChainSupport(device);
         swap_chain_adequate = !swap_chain_support.formats.empty() &&
-                              !swap_chain_support.presentModes.empty();
+                              !swap_chain_support.present_modes.empty();
     }
 
     return indices.IsComplete() && extensions_supported && swap_chain_adequate;
@@ -345,7 +345,7 @@ TriangleApplication::QueueFamilyIndices TriangleApplication::FindQueueFamilies(
     int i = 0;
     for (const auto& queue_family : queue_families) {
         if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            indices.graphicsFamily = i;
+            indices.graphics_family = i;
         }
 
         // Look for a queue family that is capable of presenting to the window
@@ -355,7 +355,7 @@ TriangleApplication::QueueFamilyIndices TriangleApplication::FindQueueFamilies(
                                              &present_support);
 
         if (present_support) {
-            indices.presentFamily = i;
+            indices.present_family = i;
         }
 
         if (indices.IsComplete()) {
@@ -370,7 +370,7 @@ TriangleApplication::QueueFamilyIndices TriangleApplication::FindQueueFamilies(
 
 void TriangleApplication::CreateLogicalDevice() {
     // Specify the queues to be created
-    QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+    QueueFamilyIndices indices = FindQueueFamilies(physical_device);
 
     // Set multiple VkDeviceQueueCreateInfo structs to create a queue
     // from both families which are mandatory for the required queues
@@ -378,10 +378,10 @@ void TriangleApplication::CreateLogicalDevice() {
 
     std::set<uint32_t> unique_queue_families = {};
 
-    if (indices.graphicsFamily.has_value() &&
-        indices.presentFamily.has_value()) {
-        unique_queue_families.insert(indices.graphicsFamily.value());
-        unique_queue_families.insert(indices.presentFamily.value());
+    if (indices.graphics_family.has_value() &&
+        indices.present_family.has_value()) {
+        unique_queue_families.insert(indices.graphics_family.value());
+        unique_queue_families.insert(indices.present_family.value());
     } else {
         throw std::runtime_error(
             "Indices's graphics and present Families contain no value!");
@@ -426,18 +426,18 @@ void TriangleApplication::CreateLogicalDevice() {
     }
 
     // Instantiate the logical device
-    if (vkCreateDevice(physicalDevice, &create_info, nullptr, &device) !=
+    if (vkCreateDevice(physical_device, &create_info, nullptr, &device) !=
         VK_SUCCESS) {
         throw std::runtime_error("failed to create logical device!");
     }
 
-    if (indices.graphicsFamily.has_value() &&
-        indices.presentFamily.has_value()) {
+    if (indices.graphics_family.has_value() &&
+        indices.present_family.has_value()) {
         // Retrieve queue handles
-        vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0,
-                         &graphicsQueue);
-        vkGetDeviceQueue(device, indices.presentFamily.value(), 0,
-                         &presentQueue);
+        vkGetDeviceQueue(device, indices.graphics_family.value(), 0,
+                         &graphics_queue);
+        vkGetDeviceQueue(device, indices.present_family.value(), 0,
+                         &present_queue);
     } else {
         throw std::runtime_error(
             "Indices's graphics and present Families contain no value!");
@@ -498,9 +498,9 @@ TriangleApplication::QuerySwapChainSupport(VkPhysicalDevice device) {
                                               &present_mode_count, nullptr);
 
     if (present_mode_count != 0) {
-        details.presentModes.resize(present_mode_count);
+        details.present_modes.resize(present_mode_count);
         vkGetPhysicalDeviceSurfacePresentModesKHR(
-            device, surface, &present_mode_count, details.presentModes.data());
+            device, surface, &present_mode_count, details.present_modes.data());
     }
 
     return details;
@@ -580,11 +580,11 @@ VkExtent2D TriangleApplication::ChooseSwapExtent(
 
 void TriangleApplication::CreateSwapChain() {
     SwapChainSupportDetails swap_chain_support =
-        QuerySwapChainSupport(physicalDevice);
+        QuerySwapChainSupport(physical_device);
     VkSurfaceFormatKHR surface_format =
         ChooseSwapSurfaceFormat(swap_chain_support.formats);
     VkPresentModeKHR present_mode =
-        ChooseSwapPresentMode(swap_chain_support.presentModes);
+        ChooseSwapPresentMode(swap_chain_support.present_modes);
     VkExtent2D extent = ChooseSwapExtent(swap_chain_support.capabilities);
 
     // Decide how many images the program would like to have in the swap chain.
@@ -623,20 +623,20 @@ void TriangleApplication::CreateSwapChain() {
     // VK_SHARING_MODE_CONCURRENT: Images can be used across multiple queue
     // faimilies without explicit onwership tranfers.
 
-    QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+    QueueFamilyIndices indices = FindQueueFamilies(physical_device);
 
     std::array<uint32_t, 2> queue_family_indices = {0};
 
-    if (indices.graphicsFamily.has_value() &&
-        indices.presentFamily.has_value()) {
-        queue_family_indices[0] = indices.graphicsFamily.value();
-        queue_family_indices[1] = indices.presentFamily.value();
+    if (indices.graphics_family.has_value() &&
+        indices.present_family.has_value()) {
+        queue_family_indices[0] = indices.graphics_family.value();
+        queue_family_indices[1] = indices.present_family.value();
     } else {
         throw std::runtime_error(
             "Indices's graphics and present Families contain no value!");
     }
 
-    if (indices.graphicsFamily != indices.presentFamily) {
+    if (indices.graphics_family != indices.present_family) {
         create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         create_info.queueFamilyIndexCount = 2;
         create_info.pQueueFamilyIndices = queue_family_indices.data();
@@ -664,7 +664,7 @@ void TriangleApplication::CreateSwapChain() {
     create_info.oldSwapchain = VK_NULL_HANDLE;
 
     // Create the swap chain
-    if (vkCreateSwapchainKHR(device, &create_info, nullptr, &swapChain) !=
+    if (vkCreateSwapchainKHR(device, &create_info, nullptr, &swap_chain) !=
         VK_SUCCESS) {
         throw std::runtime_error("failed to create swap chain!");
     }
@@ -673,28 +673,28 @@ void TriangleApplication::CreateSwapChain() {
     // 1. First query the final number of images via vkGetSwapchainImagesKHR.
     // 2. Resize the container.
     // 3. Retrieve the handles via the vkGetSwapchainImagesKHR again.
-    vkGetSwapchainImagesKHR(device, swapChain, &image_count, nullptr);
-    swapChainImages.resize(image_count);
-    vkGetSwapchainImagesKHR(device, swapChain, &image_count,
-                            swapChainImages.data());
+    vkGetSwapchainImagesKHR(device, swap_chain, &image_count, nullptr);
+    swap_chain_images.resize(image_count);
+    vkGetSwapchainImagesKHR(device, swap_chain, &image_count,
+                            swap_chain_images.data());
 
     // Store the format and extent for the swap chain images
-    swapChainImageFormat = surface_format.format;
-    swapChainExtent = extent;
+    swap_chain_image_format = surface_format.format;
+    swap_chain_extent = extent;
 }
 
 void TriangleApplication::CreateImageViews() {
-    swapChainImageViews.resize(swapChainImages.size());
+    swap_chain_image_views.resize(swap_chain_images.size());
 
-    for (size_t i = 0; i < swapChainImages.size(); i++) {
+    for (size_t i = 0; i < swap_chain_images.size(); i++) {
         // Parameters for image view creation
         VkImageViewCreateInfo create_info{};
         create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        create_info.image = swapChainImages[i];
+        create_info.image = swap_chain_images[i];
 
         // Specify how the image data should be interpreted
         create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        create_info.format = swapChainImageFormat;
+        create_info.format = swap_chain_image_format;
 
         // Swizzle the color channels around
         create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -715,7 +715,7 @@ void TriangleApplication::CreateImageViews() {
 
         // Create the image view
         if (vkCreateImageView(device, &create_info, nullptr,
-                              &swapChainImageViews[i]) != VK_SUCCESS) {
+                              &swap_chain_image_views[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create image views!");
         }
     }
