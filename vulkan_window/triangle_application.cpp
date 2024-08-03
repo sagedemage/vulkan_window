@@ -639,7 +639,8 @@ void TriangleApplication::createSwapChain() {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
-    } else {
+    } 
+    else {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0;      // Optional
         createInfo.pQueueFamilyIndices = nullptr;  // Optional
