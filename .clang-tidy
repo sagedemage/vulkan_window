@@ -29,23 +29,33 @@ Checks:   '
 WarningsAsErrors: true
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
-FormatStyle:     google
+FormatStyle: 'file'
 CheckOptions:
-  - key:          bugprone-assert-side-effect.AssertMacros
-    value:        assert,DCHECK
-  - key:          bugprone-dangling-handle.HandleClasses
-    value:        ::std::basic_string_view;::std::span;::absl::string_view;::base::BasicStringPiece;::base::span
-  - key:          bugprone-string-constructor.StringNames
-    value:        ::std::basic_string;::std::basic_string_view;::base::BasicStringPiece;::absl::string_view
-  - key:          modernize-use-default-member-init.UseAssignment
-    value:        1
-  - key:          modernize-use-transparent-functors.SafeMode
-    value:        1
-  - key:          modernize-use-emplace.IgnoreImplicitConstructors
-    value:        1
-  - key:          modernize-loop-convert.MakeReverseRangeFunction
-    value:        base::Reversed
-  - key:          modernize-loop-convert.MakeReverseRangeHeader
-    value:        base/containers/adapters.h
-  - key:          misc-include-cleaner.IgnoreHeaders
-    value:        (gmock/gmock|gtest/gtest|third_party|build/linux/debian).*
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: assert,DCHECK
+  - key: bugprone-dangling-handle.HandleClasses
+    value: ::std::basic_string_view;::std::span;::absl::string_view;::base::BasicStringPiece;::base::span
+  - key: bugprone-string-constructor.StringNames
+    value: ::std::basic_string;::std::basic_string_view;::base::BasicStringPiece;::absl::string_view
+  - key: modernize-use-default-member-init.UseAssignment
+    value: 1
+  - key: modernize-use-transparent-functors.SafeMode
+    value: 1
+  - key: modernize-use-emplace.IgnoreImplicitConstructors
+    value: 1
+  - key: modernize-loop-convert.MakeReverseRangeFunction
+    value: base::Reversed
+  - key: modernize-loop-convert.MakeReverseRangeHeader
+    value: base/containers/adapters.h
+  - key: misc-include-cleaner.IgnoreHeaders
+    value: (gmock/gmock|gtest/gtest|third_party|build/linux/debian).*
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: CamelCase
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
