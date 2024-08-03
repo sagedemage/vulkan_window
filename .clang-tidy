@@ -9,6 +9,9 @@ Checks:   '
           llvm-*,
           google-*,
           portability-*,
+          misc-misleading-identifier,
+          misc-homoglyph,
+          misc-misleading-bidirectional,
           -readability-implicit-bool-conversion,
           -readability-magic-numbers,
           -cppcoreguidelines-avoid-magic-numbers,
@@ -20,6 +23,10 @@ Checks:   '
           -llvm-header-guard,
           -performance-avoid-endl
           '
+# Trojan Source
+# The misc-misleading-identifier, misc-homoglyph, and misc-misleading-bidirectional are
+# checks for preventing the software vulnerability called Trojan Source.
+# Trojan Source are invisible source code vulnerabilities.
 
 WarningsAsErrors: true
 HeaderFilterRegex: '.*'
