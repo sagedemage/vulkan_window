@@ -1,0 +1,51 @@
+Checks:   '
+          bugprone-*,
+          cert-*,
+          cppcoreguidelines-*,
+          performance-*,
+          readability-*,
+          portability-*,
+          clang-analyzer-*,
+          llvm-*,
+          google-*,
+          -cppcoreguidelines-avoid-magic-numbers,
+          -readability-redundant-member-init,
+          -readability-else-after-return,
+          -readability-implicit-bool-conversion,
+          -cppcoreguidelines-owning-memory,
+          -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+          -cppcoreguidelines-pro-type-vararg,
+          -readability-named-parameter,
+          -readability-magic-numbers,
+          -readability-uppercase-literal-suffix,
+          -bugprone-easily-swappable-parameters,
+          -performance-avoid-endl,
+          -cppcoreguidelines-pro-type-reinterpret-cast,
+          -readability-make-member-function-const,
+          -readability-identifier-length,
+          -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+          '
+
+WarningsAsErrors: true
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+FormatStyle:     google
+CheckOptions:
+  - key:          bugprone-assert-side-effect.AssertMacros
+    value:        assert,DCHECK
+  - key:          bugprone-dangling-handle.HandleClasses
+    value:        ::std::basic_string_view;::std::span;::absl::string_view;::base::BasicStringPiece;::base::span
+  - key:          bugprone-string-constructor.StringNames
+    value:        ::std::basic_string;::std::basic_string_view;::base::BasicStringPiece;::absl::string_view
+  - key:          modernize-use-default-member-init.UseAssignment
+    value:        1
+  - key:          modernize-use-transparent-functors.SafeMode
+    value:        1
+  - key:          modernize-use-emplace.IgnoreImplicitConstructors
+    value:        1
+  - key:          modernize-loop-convert.MakeReverseRangeFunction
+    value:        base::Reversed
+  - key:          modernize-loop-convert.MakeReverseRangeHeader
+    value:        base/containers/adapters.h
+  - key:          misc-include-cleaner.IgnoreHeaders
+    value:        (gmock/gmock|gtest/gtest|third_party|build/linux/debian).*
