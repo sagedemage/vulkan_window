@@ -1,20 +1,20 @@
 /* Local header files */
 #include "triangle_application.hpp"
 
-bool TriangleApplication::QueueFamilyIndices::isComplete() {
+bool TriangleApplication::QueueFamilyIndices::IsComplete() {
     // Checks if the graphicsFamily and presentFamily objects
     // contain a value
     return graphicsFamily.has_value() && presentFamily.has_value();
 }
 
-void TriangleApplication::run() {
-    initWindow();
-    initVulkan();
-    mainLoop();
-    cleanUp();
+void TriangleApplication::Run() {
+    InitWindow();
+    InitVulkan();
+    MainLoop();
+    CleanUp();
 }
 
-void TriangleApplication::initWindow() {
+void TriangleApplication::InitWindow() {
     /* Initialize the GLFW window */
     // Initialize GLFW libary
     glfwInit();
@@ -30,25 +30,25 @@ void TriangleApplication::initWindow() {
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan window", nullptr, nullptr);
 }
 
-void TriangleApplication::initVulkan() {
+void TriangleApplication::InitVulkan() {
     /* Initialize Vulkan */
-    createInstance();
-    setupDebugMessenger();
-    createSurface();
-    pickPhysicalDevice();
-    createLogicalDevice();
-    createSwapChain();
-    createImageViews();
+    CreateInstance();
+    SetupDebugMessenger();
+    CreateSurface();
+    PickPhysicalDevice();
+    CreateLogicalDevice();
+    CreateSwapChain();
+    CreateImageViews();
 }
 
-void TriangleApplication::mainLoop() {
+void TriangleApplication::MainLoop() {
     /* Main game loop */
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
     }
 }
 
-void TriangleApplication::cleanUp() {
+void TriangleApplication::CleanUp() {
     /* Clean up resources */
     for (auto* image_view : swapChainImageViews) {
         vkDestroyImageView(device, image_view, nullptr);
@@ -58,7 +58,7 @@ void TriangleApplication::cleanUp() {
 
     vkDestroyDevice(device, nullptr);
 
-    if (enableValidationLayers) {
+    if (ENABLE_VALIDATION_LAYERS) {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
 
@@ -71,7 +71,7 @@ void TriangleApplication::cleanUp() {
     glfwTerminate();
 }
 
-void TriangleApplication::checkExtensionSupport() {
+void TriangleApplication::CheckExtensionSupport() {
     /* Checking for extension support */
     // Count the amount of supported extensions
     uint32_t extension_count = 0;
@@ -88,9 +88,9 @@ void TriangleApplication::checkExtensionSupport() {
     }
 }
 
-void TriangleApplication::createInstance() {
+void TriangleApplication::CreateInstance() {
     /* Create instance */
-    if (enableValidationLayers && !checkValidationLayerSupport()) {
+    if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayerSupport()) {
         throw std::runtime_error(
             "validation layers requested, but not available!");
     }
@@ -123,7 +123,7 @@ void TriangleApplication::createInstance() {
     create_info.ppEnabledExtensionNames = glfw_extensions;
 
     // Retreive the required list of extensions
-    auto extensions = getRequiredExtensions();
+    auto extensions = GetRequiredExtensions();
     create_info.enabledExtensionCount =
         static_cast<uint32_t>(extensions.size());
     create_info.ppEnabledExtensionNames = extensions.data();
@@ -132,12 +132,12 @@ void TriangleApplication::createInstance() {
 
     // Modify the VkInstanceCreateInfo struct to include the validation layer
     // names if they are enabled
-    if (enableValidationLayers) {
+    if (ENABLE_VALIDATION_LAYERS) {
         create_info.enabledLayerCount =
-            static_cast<uint32_t>(validationLayers.size());
-        create_info.ppEnabledLayerNames = validationLayers.data();
+            static_cast<uint32_t>(VALIDATION_LAYERS.size());
+        create_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
 
-        populateDebugMessengerCreateInfo(debug_create_info);
+        PopulateDebugMessengerCreateInfo(debug_create_info);
         create_info.pNext =
             reinterpret_cast<VkDebugUtilsMessengerCreateInfoEXT*>(
                 &debug_create_info);
@@ -155,7 +155,7 @@ void TriangleApplication::createInstance() {
     // checkExtensionSupport();
 }
 
-bool TriangleApplication::checkValidationLayerSupport() {
+bool TriangleApplication::CheckValidationLayerSupport() {
     /* Checks if all of the requested layers are available */
     // List all of the available layers
     uint32_t layer_count = 0;
@@ -166,7 +166,7 @@ bool TriangleApplication::checkValidationLayerSupport() {
 
     // Check if all of the layers in the validationLayers exist in the
     // availableLayers list
-    for (const char* layer_name : validationLayers) {
+    for (const char* layer_name : VALIDATION_LAYERS) {
         bool layer_found = false;
 
         for (const auto& layer_properties : available_layers) {
@@ -184,7 +184,7 @@ bool TriangleApplication::checkValidationLayerSupport() {
     return true;
 }
 
-std::vector<const char*> TriangleApplication::getRequiredExtensions() {
+std::vector<const char*> TriangleApplication::GetRequiredExtensions() {
     /* Retrieve the required list of extensions based on if the
     validation layers are enabled or disabled */
     uint32_t glfw_extension_count = 0;
@@ -194,14 +194,14 @@ std::vector<const char*> TriangleApplication::getRequiredExtensions() {
     std::vector<const char*> extensions(glfw_extensions,
                                         glfw_extensions + glfw_extension_count);
 
-    if (enableValidationLayers) {
+    if (ENABLE_VALIDATION_LAYERS) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
     return extensions;
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL TriangleApplication::debugCallback(
+VKAPI_ATTR VkBool32 VKAPI_CALL TriangleApplication::DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -222,14 +222,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL TriangleApplication::debugCallback(
     return VK_FALSE;
 }
 
-void TriangleApplication::setupDebugMessenger() {
-    if (!enableValidationLayers) {
+void TriangleApplication::SetupDebugMessenger() {
+    if (!ENABLE_VALIDATION_LAYERS) {
         return;
     }
 
     // Fill in the details about the messenger and its callback
     VkDebugUtilsMessengerCreateInfoEXT create_info{};
-    populateDebugMessengerCreateInfo(create_info);
+    PopulateDebugMessengerCreateInfo(create_info);
 
     // Create the extension object if it is available
     if (CreateDebugUtilsMessengerEXT(instance, &create_info, nullptr,
@@ -266,7 +266,7 @@ void TriangleApplication::DestroyDebugUtilsMessengerEXT(
     }
 }
 
-void TriangleApplication::populateDebugMessengerCreateInfo(
+void TriangleApplication::PopulateDebugMessengerCreateInfo(
     VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     /* Fill in the details about the messenger and its callback to the structure
      */
@@ -279,10 +279,10 @@ void TriangleApplication::populateDebugMessengerCreateInfo(
     createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                              VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    createInfo.pfnUserCallback = debugCallback;
+    createInfo.pfnUserCallback = DebugCallback;
 }
 
-void TriangleApplication::pickPhysicalDevice() {
+void TriangleApplication::PickPhysicalDevice() {
     // Count the number of graphics cards with Vulkan support
     uint32_t device_count = 0;
     vkEnumeratePhysicalDevices(instance, &device_count, nullptr);
@@ -297,7 +297,7 @@ void TriangleApplication::pickPhysicalDevice() {
 
     // Device suitability checks
     for (const auto& device : devices) {
-        if (isDeviceSuitable(device)) {
+        if (IsDeviceSuitable(device)) {
             physicalDevice = device;
             break;
         }
@@ -308,26 +308,26 @@ void TriangleApplication::pickPhysicalDevice() {
     }
 }
 
-bool TriangleApplication::isDeviceSuitable(VkPhysicalDevice device) {
+bool TriangleApplication::IsDeviceSuitable(VkPhysicalDevice device) {
     /* Queue family lookup function to ensure the device can process the
     commands to use */
-    QueueFamilyIndices indices = findQueueFamilies(device);
+    QueueFamilyIndices indices = FindQueueFamilies(device);
 
-    bool extensions_supported = checkDeviceExtensionSupport(device);
+    bool extensions_supported = CheckDeviceExtensionSupport(device);
 
     // Verify swap chain support is adequate
     bool swap_chain_adequate = false;
     if (extensions_supported) {
         SwapChainSupportDetails swap_chain_support =
-            querySwapChainSupport(device);
+            QuerySwapChainSupport(device);
         swap_chain_adequate = !swap_chain_support.formats.empty() &&
                               !swap_chain_support.presentModes.empty();
     }
 
-    return indices.isComplete() && extensions_supported && swap_chain_adequate;
+    return indices.IsComplete() && extensions_supported && swap_chain_adequate;
 }
 
-TriangleApplication::QueueFamilyIndices TriangleApplication::findQueueFamilies(
+TriangleApplication::QueueFamilyIndices TriangleApplication::FindQueueFamilies(
     VkPhysicalDevice device) {
     /* Logic to find queue family indices to populate the struct with */
     QueueFamilyIndices indices;
@@ -358,7 +358,7 @@ TriangleApplication::QueueFamilyIndices TriangleApplication::findQueueFamilies(
             indices.presentFamily = i;
         }
 
-        if (indices.isComplete()) {
+        if (indices.IsComplete()) {
             break;
         }
 
@@ -368,9 +368,9 @@ TriangleApplication::QueueFamilyIndices TriangleApplication::findQueueFamilies(
     return indices;
 }
 
-void TriangleApplication::createLogicalDevice() {
+void TriangleApplication::CreateLogicalDevice() {
     // Specify the queues to be created
-    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+    QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
     // Set multiple VkDeviceQueueCreateInfo structs to create a queue
     // from both families which are mandatory for the required queues
@@ -412,15 +412,15 @@ void TriangleApplication::createLogicalDevice() {
     // Enabling device extensions
     // Using a swapchain requires enabling the VK_KHR_swapchain
     create_info.enabledExtensionCount =
-        static_cast<uint32_t>(deviceExtensions.size());
-    create_info.ppEnabledExtensionNames = deviceExtensions.data();
+        static_cast<uint32_t>(DEVICE_EXTENSIONS.size());
+    create_info.ppEnabledExtensionNames = DEVICE_EXTENSIONS.data();
 
     // Specify the validation layers for the logical device if the validation
     // layers is enabled
-    if (enableValidationLayers) {
+    if (ENABLE_VALIDATION_LAYERS) {
         create_info.enabledLayerCount =
-            static_cast<uint32_t>(validationLayers.size());
-        create_info.ppEnabledLayerNames = validationLayers.data();
+            static_cast<uint32_t>(VALIDATION_LAYERS.size());
+        create_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
     } else {
         create_info.enabledLayerCount = 0;
     }
@@ -444,7 +444,7 @@ void TriangleApplication::createLogicalDevice() {
     }
 }
 
-void TriangleApplication::createSurface() {
+void TriangleApplication::CreateSurface() {
     // Cross platform way to create the window surface via GLFW
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) !=
         VK_SUCCESS) {
@@ -452,7 +452,7 @@ void TriangleApplication::createSurface() {
     }
 }
 
-bool TriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool TriangleApplication::CheckDeviceExtensionSupport(VkPhysicalDevice device) {
     /* Enumerate the extensions and check if all of the required
     extensions are included in them */
     uint32_t extension_count = 0;
@@ -463,8 +463,8 @@ bool TriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count,
                                          available_extensions.data());
 
-    std::set<std::string> required_extensions(deviceExtensions.begin(),
-                                             deviceExtensions.end());
+    std::set<std::string> required_extensions(DEVICE_EXTENSIONS.begin(),
+                                              DEVICE_EXTENSIONS.end());
 
     for (const auto& extension : available_extensions) {
         required_extensions.erase(extension.extensionName);
@@ -474,7 +474,7 @@ bool TriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 }
 
 TriangleApplication::SwapChainSupportDetails
-TriangleApplication::querySwapChainSupport(VkPhysicalDevice device) {
+TriangleApplication::QuerySwapChainSupport(VkPhysicalDevice device) {
     TriangleApplication::SwapChainSupportDetails details;
 
     // Query basic surface capabilities
@@ -506,7 +506,7 @@ TriangleApplication::querySwapChainSupport(VkPhysicalDevice device) {
     return details;
 }
 
-VkSurfaceFormatKHR TriangleApplication::chooseSwapSurfaceFormat(
+VkSurfaceFormatKHR TriangleApplication::ChooseSwapSurfaceFormat(
     const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     // Go through a list to find if the preferred combination is available
     //
@@ -526,7 +526,7 @@ VkSurfaceFormatKHR TriangleApplication::chooseSwapSurfaceFormat(
     return availableFormats[0];
 }
 
-VkPresentModeKHR TriangleApplication::chooseSwapPresentMode(
+VkPresentModeKHR TriangleApplication::ChooseSwapPresentMode(
     const std::vector<VkPresentModeKHR>& availablePresentModes) {
     // VK_PRESENT_MODE_MAILBOX_KHR: This helps to avoid tearing and maintain a
     // low letency. Use this if energy is not an issue.
@@ -542,7 +542,7 @@ VkPresentModeKHR TriangleApplication::chooseSwapPresentMode(
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D TriangleApplication::chooseSwapExtent(
+VkExtent2D TriangleApplication::ChooseSwapExtent(
     const VkSurfaceCapabilitiesKHR& capabilities) {
     // The swap extent is the resolution of the swap chain images and it's
     // usually always exactly equal to the resolution of the window that the
@@ -578,14 +578,14 @@ VkExtent2D TriangleApplication::chooseSwapExtent(
     return actual_extent;
 }
 
-void TriangleApplication::createSwapChain() {
+void TriangleApplication::CreateSwapChain() {
     SwapChainSupportDetails swap_chain_support =
-        querySwapChainSupport(physicalDevice);
+        QuerySwapChainSupport(physicalDevice);
     VkSurfaceFormatKHR surface_format =
-        chooseSwapSurfaceFormat(swap_chain_support.formats);
+        ChooseSwapSurfaceFormat(swap_chain_support.formats);
     VkPresentModeKHR present_mode =
-        chooseSwapPresentMode(swap_chain_support.presentModes);
-    VkExtent2D extent = chooseSwapExtent(swap_chain_support.capabilities);
+        ChooseSwapPresentMode(swap_chain_support.presentModes);
+    VkExtent2D extent = ChooseSwapExtent(swap_chain_support.capabilities);
 
     // Decide how many images the program would like to have in the swap chain.
     // Request one more image than the minimum to prevent waiting on the driver
@@ -623,7 +623,7 @@ void TriangleApplication::createSwapChain() {
     // VK_SHARING_MODE_CONCURRENT: Images can be used across multiple queue
     // faimilies without explicit onwership tranfers.
 
-    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+    QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
     std::array<uint32_t, 2> queue_family_indices = {0};
 
@@ -683,7 +683,7 @@ void TriangleApplication::createSwapChain() {
     swapChainExtent = extent;
 }
 
-void TriangleApplication::createImageViews() {
+void TriangleApplication::CreateImageViews() {
     swapChainImageViews.resize(swapChainImages.size());
 
     for (size_t i = 0; i < swapChainImages.size(); i++) {

@@ -35,19 +35,19 @@ const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
 // Enable the standard diagnostic layers provided by the Vulkan SDK
-const std::vector<const char*> validationLayers = {
+const std::vector<const char*> VALIDATION_LAYERS = {
     "VK_LAYER_KHRONOS_validation"};
 
 // Declare a list of required device extensions
-const std::vector<const char*> deviceExtensions = {
+const std::vector<const char*> DEVICE_EXTENSIONS = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 #define NDEBUG
 
 #ifndef NDEBUG  // not debug
-const bool enableValidationLayers = false;
+const bool ENABLE_VALIDATION_LAYERS = false;
 #else
-const bool enableValidationLayers = true;
+const bool ENABLE_VALIDATION_LAYERS = true;
 #endif
 
 class TriangleApplication {
@@ -70,7 +70,7 @@ class TriangleApplication {
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
 
-        bool isComplete();
+        bool IsComplete();
     };
 
     struct SwapChainSupportDetails {
@@ -79,20 +79,20 @@ class TriangleApplication {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    void initWindow();
-    void initVulkan();
-    void mainLoop();
-    void cleanUp();
-    static void checkExtensionSupport();
-    void createInstance();
-    static bool checkValidationLayerSupport();
-    static std::vector<const char*> getRequiredExtensions();
+    void InitWindow();
+    void InitVulkan();
+    void MainLoop();
+    void CleanUp();
+    static void CheckExtensionSupport();
+    void CreateInstance();
+    static bool CheckValidationLayerSupport();
+    static std::vector<const char*> GetRequiredExtensions();
     static VKAPI_ATTR VkBool32 VKAPI_CALL
-    debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                   VkDebugUtilsMessageTypeFlagsEXT messageType,
                   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                   void* pUserData);
-    void setupDebugMessenger();
+    void SetupDebugMessenger();
     static VkResult CreateDebugUtilsMessengerEXT(
         VkInstance instance,
         const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -101,25 +101,25 @@ class TriangleApplication {
     static void DestroyDebugUtilsMessengerEXT(
         VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
         const VkAllocationCallbacks* pAllocator);
-    static void populateDebugMessengerCreateInfo(
+    static void PopulateDebugMessengerCreateInfo(
         VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-    void pickPhysicalDevice();
-    bool isDeviceSuitable(VkPhysicalDevice device);
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-    void createLogicalDevice();
-    void createSurface();
-    static bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
+    void PickPhysicalDevice();
+    bool IsDeviceSuitable(VkPhysicalDevice device);
+    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+    void CreateLogicalDevice();
+    void CreateSurface();
+    static bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+    static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(
         const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    static VkPresentModeKHR chooseSwapPresentMode(
+    static VkPresentModeKHR ChooseSwapPresentMode(
         const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-    void createSwapChain();
-    void createImageViews();
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    void CreateSwapChain();
+    void CreateImageViews();
 
    public:
-    void run();
+    void Run();
 };
 
 #endif  // TRIANGLE_APPLICATION_H
