@@ -57,7 +57,7 @@ void TriangleApplication::mainLoop()
 void TriangleApplication::cleanUp()
 {
     /* Clean up resources */
-    for (auto imageView : swapChainImageViews) {
+    for (auto *imageView : swapChainImageViews) {
         vkDestroyImageView(device, imageView, nullptr);
     }
 
@@ -123,7 +123,7 @@ void TriangleApplication::createInstance()
 
     // Add an extension to inferface with the window system for GLFW
     uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions;
+    const char** glfwExtensions = nullptr;
 
     // This function returns an array of required Vulkan instance extensions
     // for creating Vulkan surfaces on GLFW windows
@@ -147,7 +147,7 @@ void TriangleApplication::createInstance()
         createInfo.ppEnabledLayerNames = validationLayers.data();
 
         populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+        createInfo.pNext = reinterpret_cast<VkDebugUtilsMessengerCreateInfoEXT*>(&debugCreateInfo);
     }
     else
     {
@@ -168,7 +168,7 @@ bool TriangleApplication::checkValidationLayerSupport()
 {
     /* Checks if all of the requested layers are available */
     // List all of the available layers
-    uint32_t layerCount;
+    uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
     std::vector<VkLayerProperties> availableLayers(layerCount);
@@ -203,7 +203,7 @@ std::vector<const char*> TriangleApplication::getRequiredExtensions()
     /* Retrieve the required list of extensions based on if the
     validation layers are enabled or disabled */
     uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions;
+    const char** glfwExtensions = nullptr;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
@@ -223,14 +223,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL TriangleApplication::debugCallback(
     void* pUserData)
 {
     /* Debug to the console for validation layers */
-    std::string debug_msg = "validation layer: " + (std::string)pCallbackData->pMessage;
+    std::string debug_msg = "validation layer: " + static_cast<std::string>(pCallbackData->pMessage);
     std::cerr << debug_msg << std::endl;
     OutputDebugStringA(debug_msg.c_str());
 
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
         // Message is important enought to show
-        debug_msg = "validation layer ERROR: " + (std::string)pCallbackData->pMessage;
+        debug_msg = "validation layer ERROR: " + static_cast<std::string>(pCallbackData->pMessage);
         throw std::runtime_error(debug_msg.c_str());
     }
 
@@ -261,16 +261,14 @@ VkResult TriangleApplication::CreateDebugUtilsMessengerEXT(VkInstance instance,
 {
     /* Proxy function to create the debug messenger */
     // Looks up the address of the VkDebugUtilsMessengerEXT object
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
 
     if (func != nullptr)
     {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     }
-    else
-    {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
+    
+    return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 void TriangleApplication::DestroyDebugUtilsMessengerEXT(VkInstance instance,
@@ -278,8 +276,8 @@ void TriangleApplication::DestroyDebugUtilsMessengerEXT(VkInstance instance,
     const VkAllocationCallbacks* pAllocator)
 {
     /* Proxy function to destroy the debug messenger */
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
-        "vkDestroyDebugUtilsMessengerEXT");
+    auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance,
+        "vkDestroyDebugUtilsMessengerEXT"));
 
     if (func != nullptr)
     {
@@ -398,10 +396,16 @@ void TriangleApplication::createLogicalDevice()
     // Set multiple VkDeviceQueueCreateInfo structs to create a queue
     // from both families which are mandatory for the required queues
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {
-        indices.graphicsFamily.value(),
-        indices.presentFamily.value()
-    };
+
+    std::set<uint32_t> uniqueQueueFamilies = {};
+
+    if (indices.graphicsFamily.has_value() && indices.presentFamily.has_value()) {
+        uniqueQueueFamilies.insert(indices.graphicsFamily.value());
+        uniqueQueueFamilies.insert(indices.presentFamily.value());
+    }
+    else {
+        throw std::runtime_error("Indices's graphics and present Families contain no value!");
+    }
 
     float queuePriority = 1.0f;
     
@@ -446,9 +450,14 @@ void TriangleApplication::createLogicalDevice()
         throw std::runtime_error("failed to create logical device!");
     }
 
-    // Retrieve queue handles
-    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
-    vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+    if (indices.graphicsFamily.has_value() && indices.presentFamily.has_value()) {
+        // Retrieve queue handles
+        vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+        vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+    }
+    else {
+        throw std::runtime_error("Indices's graphics and present Families contain no value!");
+    }
 }
 
 void TriangleApplication::createSurface() {
@@ -461,7 +470,7 @@ void TriangleApplication::createSurface() {
 bool TriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     /* Enumerate the extensions and check if all of the required
     extensions are included in them */
-    uint32_t extensionCount;
+    uint32_t extensionCount = 0;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
@@ -483,7 +492,7 @@ TriangleApplication::SwapChainSupportDetails TriangleApplication::querySwapChain
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
     // Querying the supported surface formats
-    uint32_t formatCount;
+    uint32_t formatCount = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
     if (formatCount != 0) {
@@ -492,7 +501,7 @@ TriangleApplication::SwapChainSupportDetails TriangleApplication::querySwapChain
     }
 
     // Querying the supported presentation modes
-    uint32_t presentModeCount;
+    uint32_t presentModeCount = 0;
     vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
 
     if (presentModeCount != 0) {
@@ -550,7 +559,8 @@ VkExtent2D TriangleApplication::chooseSwapExtent(const VkSurfaceCapabilitiesKHR&
         return capabilities.currentExtent;
     }
 
-    int width, height;
+    int width = 0;
+    int height = 0;
     glfwGetFramebufferSize(window, &width, &height);
 
     VkExtent2D actualExtent = {
@@ -614,15 +624,21 @@ void TriangleApplication::createSwapChain() {
     // explicit onwership tranfers.
 
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-    uint32_t queueFamilyIndices[] = {
-        indices.graphicsFamily.value(),
-        indices.presentFamily.value()
-    };
+
+    std::array<uint32_t, 2> queueFamilyIndices = {0};
+
+    if (indices.graphicsFamily.has_value() && indices.presentFamily.has_value()) {
+        queueFamilyIndices[0] = indices.graphicsFamily.value();
+        queueFamilyIndices[1] = indices.presentFamily.value();
+    }
+    else {
+        throw std::runtime_error("Indices's graphics and present Families contain no value!");
+    }
 
     if (indices.graphicsFamily != indices.presentFamily) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
-        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
     }
     else {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
