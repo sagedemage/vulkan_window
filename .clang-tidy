@@ -8,6 +8,7 @@ Checks:   '
           clang-analyzer-*,
           llvm-*,
           google-*,
+          portability-*,
           -readability-implicit-bool-conversion,
           -readability-magic-numbers,
           -cppcoreguidelines-avoid-magic-numbers,
