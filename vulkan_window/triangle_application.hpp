@@ -88,21 +88,21 @@ class TriangleApplication {
     static bool CheckValidationLayerSupport();
     static std::vector<const char*> GetRequiredExtensions();
     static VKAPI_ATTR VkBool32 VKAPI_CALL
-    DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                  VkDebugUtilsMessageTypeFlagsEXT messageType,
-                  const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                  void* pUserData);
+    DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                  VkDebugUtilsMessageTypeFlagsEXT message_type,
+                  const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data,
+                  void* p_user_data);
     void SetupDebugMessenger();
     static VkResult CreateDebugUtilsMessengerEXT(
         VkInstance instance,
-        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-        const VkAllocationCallbacks* pAllocator,
-        VkDebugUtilsMessengerEXT* pDebugMessenger);
+        const VkDebugUtilsMessengerCreateInfoEXT* p_create_info,
+        const VkAllocationCallbacks* p_allocator,
+        VkDebugUtilsMessengerEXT* p_debug_messenger);
     static void DestroyDebugUtilsMessengerEXT(
-        VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-        const VkAllocationCallbacks* pAllocator);
+        VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger,
+        const VkAllocationCallbacks* p_allocator);
     static void PopulateDebugMessengerCreateInfo(
-        VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+        VkDebugUtilsMessengerCreateInfoEXT& create_info);
     void PickPhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice device);
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
@@ -111,9 +111,9 @@ class TriangleApplication {
     static bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
     static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(
-        const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        const std::vector<VkSurfaceFormatKHR>& available_formats);
     static VkPresentModeKHR ChooseSwapPresentMode(
-        const std::vector<VkPresentModeKHR>& availablePresentModes);
+        const std::vector<VkPresentModeKHR>& available_present_modes);
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     void CreateSwapChain();
     void CreateImageViews();

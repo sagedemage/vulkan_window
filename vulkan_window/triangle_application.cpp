@@ -202,20 +202,20 @@ std::vector<const char*> TriangleApplication::GetRequiredExtensions() {
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL TriangleApplication::DebugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-    void* pUserData) {
+    VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+    VkDebugUtilsMessageTypeFlagsEXT message_type,
+    const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data,
+    void* p_user_data) {
     /* Debug to the console for validation layers */
     std::string debug_msg = "validation layer: " +
-                            static_cast<std::string>(pCallbackData->pMessage);
+                            static_cast<std::string>(p_callback_data->pMessage);
     std::cerr << debug_msg << std::endl;
     OutputDebugStringA(debug_msg.c_str());
 
-    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    if (message_severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
         // Message is important enought to show
         debug_msg = "validation layer ERROR: " +
-                    static_cast<std::string>(pCallbackData->pMessage);
+                    static_cast<std::string>(p_callback_data->pMessage);
         throw std::runtime_error(debug_msg.c_str());
     }
 
@@ -239,47 +239,47 @@ void TriangleApplication::SetupDebugMessenger() {
 }
 
 VkResult TriangleApplication::CreateDebugUtilsMessengerEXT(
-    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-    const VkAllocationCallbacks* pAllocator,
-    VkDebugUtilsMessengerEXT* pDebugMessenger) {
+    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* p_create_info,
+    const VkAllocationCallbacks* p_allocator,
+    VkDebugUtilsMessengerEXT* p_debug_messenger) {
     /* Proxy function to create the debug messenger */
     // Looks up the address of the VkDebugUtilsMessengerEXT object
     auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
         vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
 
     if (func != nullptr) {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+        return func(instance, p_create_info, p_allocator, p_debug_messenger);
     }
 
     return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 void TriangleApplication::DestroyDebugUtilsMessengerEXT(
-    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-    const VkAllocationCallbacks* pAllocator) {
+    VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger,
+    const VkAllocationCallbacks* p_allocator) {
     /* Proxy function to destroy the debug messenger */
     auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
         vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
 
     if (func != nullptr) {
-        func(instance, debugMessenger, pAllocator);
+        func(instance, debug_messenger, p_allocator);
     }
 }
 
 void TriangleApplication::PopulateDebugMessengerCreateInfo(
-    VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+    VkDebugUtilsMessengerCreateInfoEXT& create_info) {
     /* Fill in the details about the messenger and its callback to the structure
      */
-    createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity =
+    create_info = {};
+    create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    create_info.messageSeverity =
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+    create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                              VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    createInfo.pfnUserCallback = DebugCallback;
+    create_info.pfnUserCallback = DebugCallback;
 }
 
 void TriangleApplication::PickPhysicalDevice() {
@@ -507,7 +507,7 @@ TriangleApplication::QuerySwapChainSupport(VkPhysicalDevice device) {
 }
 
 VkSurfaceFormatKHR TriangleApplication::ChooseSwapSurfaceFormat(
-    const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    const std::vector<VkSurfaceFormatKHR>& available_formats) {
     // Go through a list to find if the preferred combination is available
     //
     // VK_COLOR_SPACE_SRGB_NONLINEAR_KHR: SRGB color space is supported
@@ -516,24 +516,24 @@ VkSurfaceFormatKHR TriangleApplication::ChooseSwapSurfaceFormat(
     // VK_FORMAT_B8G8R8A8_SRGB: store the BGRA channels in that order
     // with each channels containing a 8 bit unsigned integer.
     // This would result in a total of 32 bits per pixel.
-    for (const auto& available_format : availableFormats) {
+    for (const auto& available_format : available_formats) {
         if (available_format.format == VK_FORMAT_B8G8R8A8_SRGB &&
             available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return available_format;
         }
     }
 
-    return availableFormats[0];
+    return available_formats[0];
 }
 
 VkPresentModeKHR TriangleApplication::ChooseSwapPresentMode(
-    const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    const std::vector<VkPresentModeKHR>& available_present_modes) {
     // VK_PRESENT_MODE_MAILBOX_KHR: This helps to avoid tearing and maintain a
     // low letency. Use this if energy is not an issue.
     //
     // VK_PRESENT_MODE_FIFO_KHR: If energy usage is an issue, use this.
     // This is recommended for mobile devices.
-    for (const auto& available_present_mode : availablePresentModes) {
+    for (const auto& available_present_mode : available_present_modes) {
         if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return available_present_mode;
         }
