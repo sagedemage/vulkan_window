@@ -152,7 +152,7 @@ void TriangleApplication::CreateInstance() {
             "vkCreateInstance ERROR: failed to create instance!");
     }
 
-    // checkExtensionSupport();
+    //CheckExtensionSupport();
 }
 
 bool TriangleApplication::CheckValidationLayerSupport() {
