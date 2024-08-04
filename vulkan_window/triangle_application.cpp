@@ -734,10 +734,6 @@ void TriangleApplication::CreateGraphicsPipeline() {
     VkShaderModule vert_shader_module = CreateShaderModule(vert_shader_code);
     VkShaderModule frag_shader_module = CreateShaderModule(frag_shader_code);
 
-    // Destroy shader modules
-    vkDestroyShaderModule(device, frag_shader_module, nullptr);
-    vkDestroyShaderModule(device, vert_shader_module, nullptr);
-
     // Fill in the structure for the vertex shader
     VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
     vert_shader_stage_info.sType =
@@ -757,16 +753,6 @@ void TriangleApplication::CreateGraphicsPipeline() {
     // Define an attray that contains these two structures
     std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages = {
         vert_shader_stage_info, frag_shader_stage_info};
-
-    // Fill in the dynamic state's information
-    std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
-                                                  VK_DYNAMIC_STATE_SCISSOR};
-
-    VkPipelineDynamicStateCreateInfo dynamic_state{};
-    dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamic_state.dynamicStateCount =
-        static_cast<uint32_t>(dynamic_states.size());
-    dynamic_state.pDynamicStates = dynamic_states.data();
 
     // Fill in the information for the vertex input
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};
@@ -791,26 +777,13 @@ void TriangleApplication::CreateGraphicsPipeline() {
     // Difference between Viewport and Scissor
     // A viewport define the transformation from the image to the framebuffer
     // A scissor define which regions picels will actually be stored
-    VkViewport viewport{};
-    viewport.x = 0.0F;
-    viewport.y = 0.0F;
-    viewport.width = static_cast<float>(swap_chain_extent.width);
-    viewport.height = static_cast<float>(swap_chain_extent.height);
-    viewport.minDepth = 0.0F;
-    viewport.maxDepth = 1.0F;
-
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = swap_chain_extent;
 
     // Fill in the information for viewport state
     VkPipelineViewportStateCreateInfo viewport_state{};
     viewport_state.sType =
         VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewport_state.viewportCount = 1;
-    viewport_state.pViewports = &viewport;
     viewport_state.scissorCount = 1;
-    viewport_state.pScissors = &scissor;
 
     // Fill in the information for the rasterizer
     VkPipelineRasterizationStateCreateInfo rasterizer{};
@@ -825,7 +798,6 @@ void TriangleApplication::CreateGraphicsPipeline() {
     // VK_POLYGON_MODE_POINT: polygon vertices are drawn as points
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0F;
-
     // The cullMode varaible determines the type of face culling to use
     // You can disable culling, cull the front faces, cull the back faces
     // or both
@@ -834,7 +806,6 @@ void TriangleApplication::CreateGraphicsPipeline() {
     // It can be clockwise or counterclockwise
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0F;  // Optional
     rasterizer.depthBiasClamp = 0.0F;           // Optional
@@ -885,6 +856,17 @@ void TriangleApplication::CreateGraphicsPipeline() {
     color_blending.blendConstants[2] = 0.0F;  // Optional
     color_blending.blendConstants[3] = 0.0F;  // Optional
 
+    // Dynamic State
+    // Fill in the dynamic state's information
+    std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
+                                                  VK_DYNAMIC_STATE_SCISSOR};
+
+    VkPipelineDynamicStateCreateInfo dynamic_state{};
+    dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamic_state.dynamicStateCount =
+        static_cast<uint32_t>(dynamic_states.size());
+    dynamic_state.pDynamicStates = dynamic_states.data();
+
     // Fill in the information for the piepline layout
     VkPipelineLayoutCreateInfo pipeline_layout_info;
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -898,6 +880,10 @@ void TriangleApplication::CreateGraphicsPipeline() {
                                &pipeline_layout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
+
+    // Destroy shader modules
+    vkDestroyShaderModule(device, frag_shader_module, nullptr);
+    vkDestroyShaderModule(device, vert_shader_module, nullptr);
 }
 
 std::vector<char> TriangleApplication::ReadFile(const std::string& filename) {
