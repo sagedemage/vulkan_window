@@ -23,6 +23,7 @@
 #include <cstdint>  // Required for uint32_t
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <limits>  // Required for std::numeric_limits
 #include <map>
@@ -30,7 +31,6 @@
 #include <set>
 #include <stdexcept>
 #include <vector>
-#include <fstream>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -121,6 +121,7 @@ class TriangleApplication {
     void CreateGraphicsPipeline();
     static std::vector<char> ReadFile(const std::string& filename);
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
+
    public:
     void Run();
 };
