@@ -239,7 +239,8 @@ void TriangleApplication::SetupDebugMessenger() {
 }
 
 VkResult TriangleApplication::CreateDebugUtilsMessengerEXT(
-    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* p_create_info,
+    VkInstance instance,
+    const VkDebugUtilsMessengerCreateInfoEXT* p_create_info,
     const VkAllocationCallbacks* p_allocator,
     VkDebugUtilsMessengerEXT* p_debug_messenger) {
     /* Proxy function to create the debug messenger */
@@ -277,8 +278,8 @@ void TriangleApplication::PopulateDebugMessengerCreateInfo(
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+                              VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     create_info.pfnUserCallback = DebugCallback;
 }
 
