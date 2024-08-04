@@ -385,7 +385,7 @@ void TriangleApplication::CreateLogicalDevice() {
         unique_queue_families.insert(indices.present_family.value());
     } else {
         throw std::runtime_error(
-            "Indices's graphics and present Families contain no value!");
+            "Indices's graphics and present families contain no value!");
     }
 
     float queue_priority = 1.0F;
