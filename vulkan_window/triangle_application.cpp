@@ -39,6 +39,7 @@ void TriangleApplication::InitVulkan() {
     CreateLogicalDevice();
     CreateSwapChain();
     CreateImageViews();
+    CreateGraphicsPipeline();
 }
 
 void TriangleApplication::MainLoop() {
@@ -720,4 +721,77 @@ void TriangleApplication::CreateImageViews() {
             throw std::runtime_error("failed to create image views!");
         }
     }
+}
+
+void TriangleApplication::CreateGraphicsPipeline() {
+    // Retreive the vertex and fragment shader code
+    auto vert_shader_code = ReadFile("shaders/vert.spv");
+    auto frag_shader_code = ReadFile("shaders/frag.spv");
+
+    // Create shader modules
+    VkShaderModule vert_shader_module = CreateShaderModule(vert_shader_code);
+    VkShaderModule frag_shader_module = CreateShaderModule(frag_shader_code);
+
+    // Destroy shader modules
+    vkDestroyShaderModule(device, frag_shader_module, nullptr);
+    vkDestroyShaderModule(device, vert_shader_module, nullptr);
+
+    // Fill in the structure for the vertex shader
+    VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
+    vert_shader_stage_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vert_shader_stage_info.module = vert_shader_module;
+    vert_shader_stage_info.pName = "main";
+
+    // Fill in the structure for the fragment shader
+    VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
+    frag_shader_stage_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    frag_shader_stage_info.module = frag_shader_module;
+    frag_shader_stage_info.pName = "main";
+
+    // Define an attray that contains these two structures
+    std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages = {
+        vert_shader_stage_info, frag_shader_stage_info};
+}
+
+std::vector<char> TriangleApplication::ReadFile(const std::string& filename) {
+    // load vinary data from a file
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("failed to open file!");
+    }
+
+    // determine the size of the file and allocate a buffer
+    size_t file_size = static_cast<size_t>(file.tellg());
+    std::vector<char> buffer(file_size);
+
+    // seek back to the beginning of the file and read all of the bytes
+    // seekg: sets the position of the next chracter to be extracted
+    // from the input stream
+    file.seekg(0);
+    file.read(buffer.data(), file_size);
+
+    file.close();
+    return buffer;
+}
+
+VkShaderModule TriangleApplication::CreateShaderModule(
+    const std::vector<char>& code) {
+    // Specify the information for the shader module
+    VkShaderModuleCreateInfo create_info{};
+    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    create_info.codeSize = code.size();
+    create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+    // Create shader module
+    VkShaderModule shader_module = nullptr;
+    if (vkCreateShaderModule(device, &create_info, nullptr, &shader_module) !=
+        VK_SUCCESS) {
+        throw std::runtime_error("failed to create shader module!");
+    }
+    return shader_module;
 }

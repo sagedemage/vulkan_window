@@ -30,6 +30,7 @@
 #include <set>
 #include <stdexcept>
 #include <vector>
+#include <fstream>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -117,7 +118,9 @@ class TriangleApplication {
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     void CreateSwapChain();
     void CreateImageViews();
-
+    void CreateGraphicsPipeline();
+    static std::vector<char> ReadFile(const std::string& filename);
+    VkShaderModule CreateShaderModule(const std::vector<char>& code);
    public:
     void Run();
 };
