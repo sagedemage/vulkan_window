@@ -32,6 +32,8 @@ WarningsAsErrors: true
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle: 'file'
+
+# Add the following check options to comply with some aspects of the Google C++ Style Guide
 CheckOptions:
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
@@ -45,7 +47,5 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.MemberCase
     value: lower_case
-  #- key: readability-identifier-naming.ClassMemberSuffix
-  #  value: _
   - key: readability-identifier-naming.GlobalConstantCase
     value: UPPER_CASE
