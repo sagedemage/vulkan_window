@@ -51,6 +51,8 @@ void TriangleApplication::MainLoop() {
 
 void TriangleApplication::CleanUp() {
     /* Clean up resources */
+    vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
+
     for (auto* image_view : swap_chain_image_views) {
         vkDestroyImageView(device, image_view, nullptr);
     }
@@ -755,6 +757,147 @@ void TriangleApplication::CreateGraphicsPipeline() {
     // Define an attray that contains these two structures
     std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages = {
         vert_shader_stage_info, frag_shader_stage_info};
+
+    // Fill in the dynamic state's information
+    std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
+                                                  VK_DYNAMIC_STATE_SCISSOR};
+
+    VkPipelineDynamicStateCreateInfo dynamic_state{};
+    dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamic_state.dynamicStateCount =
+        static_cast<uint32_t>(dynamic_states.size());
+    dynamic_state.pDynamicStates = dynamic_states.data();
+
+    // Fill in the information for the vertex input
+    VkPipelineVertexInputStateCreateInfo vertex_input_info{};
+    vertex_input_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertex_input_info.vertexBindingDescriptionCount = 0;
+    vertex_input_info.pVertexBindingDescriptions = nullptr;  // Optional
+    vertex_input_info.vertexAttributeDescriptionCount = 0;
+    vertex_input_info.pVertexAttributeDescriptions = nullptr;  // Optional
+
+    // Fill in the information for the input assembly
+    VkPipelineInputAssemblyStateCreateInfo input_assembly{};
+    input_assembly.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    input_assembly.primitiveRestartEnable = VK_FALSE;
+
+    // Specify viewport and scissor
+    // A viewport describes the reigion of the framebuffer that the output will
+    // be rendered to.
+    //
+    // Difference between Viewport and Scissor
+    // A viewport define the transformation from the image to the framebuffer
+    // A scissor define which regions picels will actually be stored
+    VkViewport viewport{};
+    viewport.x = 0.0F;
+    viewport.y = 0.0F;
+    viewport.width = static_cast<float>(swap_chain_extent.width);
+    viewport.height = static_cast<float>(swap_chain_extent.height);
+    viewport.minDepth = 0.0F;
+    viewport.maxDepth = 1.0F;
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = swap_chain_extent;
+
+    // Fill in the information for viewport state
+    VkPipelineViewportStateCreateInfo viewport_state{};
+    viewport_state.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewport_state.viewportCount = 1;
+    viewport_state.pViewports = &viewport;
+    viewport_state.scissorCount = 1;
+    viewport_state.pScissors = &scissor;
+
+    // Fill in the information for the rasterizer
+    VkPipelineRasterizationStateCreateInfo rasterizer{};
+    rasterizer.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterizer.depthClampEnable = VK_FALSE;
+    rasterizer.rasterizerDiscardEnable = VK_FALSE;
+    // polygonMode termines how the fragments are generated for geometry.
+    // The following modes are available:
+    // VK_POLYGON_MODE_FILL: fill the area of the polygon with fragments
+    // VK_POLYGON_MODE_LINE: polygon edges are drawn as lines
+    // VK_POLYGON_MODE_POINT: polygon vertices are drawn as points
+    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizer.lineWidth = 1.0F;
+
+    // The cullMode varaible determines the type of face culling to use
+    // You can disable culling, cull the front faces, cull the back faces
+    // or both
+    // The frontFace variable specifies the vertex order for faces to be
+    // considered front-facing.
+    // It can be clockwise or counterclockwise
+    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+
+    rasterizer.depthBiasEnable = VK_FALSE;
+    rasterizer.depthBiasConstantFactor = 0.0F;  // Optional
+    rasterizer.depthBiasClamp = 0.0F;           // Optional
+    rasterizer.depthBiasSlopeFactor = 0.0F;     // Optional
+
+    // Fill in the information for multisampling
+    VkPipelineMultisampleStateCreateInfo multisampling{};
+    multisampling.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisampling.sampleShadingEnable = VK_FALSE;
+    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisampling.minSampleShading = 1.0F;           // Optional
+    multisampling.pSampleMask = nullptr;             // Optional
+    multisampling.alphaToCoverageEnable = VK_FALSE;  // Optional
+    multisampling.alphaToOneEnable = VK_FALSE;       // Optional
+
+    // Color blending is when after a fragment shader has retruned a color,
+    // it needs to be combined with the color that is already in the
+    // framebuffer.
+
+    // Configure color blending
+    VkPipelineColorBlendAttachmentState color_blend_attachment{};
+    color_blend_attachment.colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    color_blend_attachment.blendEnable = VK_FALSE;
+    color_blend_attachment.srcColorBlendFactor =
+        VK_BLEND_FACTOR_ONE;  // Optional
+    color_blend_attachment.dstColorBlendFactor =
+        VK_BLEND_FACTOR_ZERO;                               // Optional
+    color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;  // Optional
+    color_blend_attachment.srcAlphaBlendFactor =
+        VK_BLEND_FACTOR_ONE;  // Optional
+    color_blend_attachment.dstAlphaBlendFactor =
+        VK_BLEND_FACTOR_ZERO;                               // Optional
+    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;  // Optional
+
+    // Fill in the information for color blending state
+    VkPipelineColorBlendStateCreateInfo color_blending{};
+    color_blending.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    color_blending.logicOpEnable = VK_FALSE;
+    color_blending.logicOp = VK_LOGIC_OP_COPY;  // Optional
+    color_blending.attachmentCount = 1;
+    color_blending.pAttachments = &color_blend_attachment;
+    color_blending.blendConstants[0] = 0.0F;  // Optional
+    color_blending.blendConstants[1] = 0.0F;  // Optional
+    color_blending.blendConstants[2] = 0.0F;  // Optional
+    color_blending.blendConstants[3] = 0.0F;  // Optional
+
+    // Fill in the information for the piepline layout
+    VkPipelineLayoutCreateInfo pipeline_layout_info;
+    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_info.setLayoutCount = 0;             // Optional
+    pipeline_layout_info.pSetLayouts = nullptr;          // Optional
+    pipeline_layout_info.pushConstantRangeCount = 0;     // Optional
+    pipeline_layout_info.pPushConstantRanges = nullptr;  // Optional
+
+    // Create pipeline layout
+    if (vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr,
+                               &pipeline_layout) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
 }
 
 std::vector<char> TriangleApplication::ReadFile(const std::string& filename) {

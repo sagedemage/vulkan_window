@@ -66,6 +66,7 @@ class TriangleApplication {
     std::vector<VkImageView> swap_chain_image_views;
     VkFormat swap_chain_image_format{};
     VkExtent2D swap_chain_extent{};
+    VkPipelineLayout pipeline_layout;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
