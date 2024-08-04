@@ -4,84 +4,122 @@
 /* Third party libraries */
 #include <vulkan/vulkan.h>
 
+#define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
 
 #define GLM_FORCE_RADIUS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <vec4.hpp>
 #include <mat4x4.hpp>
+#include <vec4.hpp>
 
 /* Standard libraries */
-#include <iostream>
-#include <stdexcept>
-#include <cstdlib>
-#include <vector>
-#include <cstring>
 #include <Windows.h>
+
+#include <algorithm>  // Required for std::clamp
+#include <array>
+#include <cstdint>  // Required for uint32_t
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <limits>  // Required for std::numeric_limits
 #include <map>
 #include <optional>
+#include <set>
+#include <stdexcept>
+#include <vector>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
 // Enable the standard diagnostic layers provided by the Vulkan SDK
-const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation" };
+const std::array<const char*, 1> VALIDATION_LAYERS = {
+    "VK_LAYER_KHRONOS_validation"};
+
+// Declare a list of required device extensions
+const std::array<const char*, 1> DEVICE_EXTENSIONS = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 #define NDEBUG
 
-#ifndef NDEBUG // not debug
-const bool enableValidationLayers = false;
+#ifndef NDEBUG  // not debug
+const bool ENABLE_VALIDATION_LAYERS = false;
 #else
-const bool enableValidationLayers = true;
+const bool ENABLE_VALIDATION_LAYERS = true;
 #endif
 
-class TriangleApplication
-{
-    GLFWwindow* window;
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice device;
-    VkQueue graphicsQueue;
+class TriangleApplication {
+   private:
+    GLFWwindow* window{};
+    VkInstance instance{};
+    VkDebugUtilsMessengerEXT debug_messenger{};
+    VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+    VkDevice device{};
+    VkQueue graphics_queue{};
+    VkSurfaceKHR surface{};
+    VkQueue present_queue{};
+    VkSwapchainKHR swap_chain{};
+    std::vector<VkImage> swap_chain_images;
+    std::vector<VkImageView> swap_chain_image_views;
+    VkFormat swap_chain_image_format{};
+    VkExtent2D swap_chain_extent{};
 
-    struct QueueFamilyIndices
-    {
-        std::optional<uint32_t> graphicsFamily;
+    struct QueueFamilyIndices {
+        std::optional<uint32_t> graphics_family;
+        std::optional<uint32_t> present_family;
 
-        bool isComplete();
+        bool IsComplete();
     };
 
-public:
-    void run();
+    struct SwapChainSupportDetails {
+        VkSurfaceCapabilitiesKHR capabilities{};
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> present_modes;
+    };
 
-private:
-    void initWindow();
-    void initVulkan();
-    void mainLoop();
-    void cleanUp();
-    void checkExtensionSupport();
-    void createInstance();
-    bool checkValidationLayerSupport();
-    std::vector<const char*> getRequiredExtensions();
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* pUserData);
-    void setupDebugMessenger();
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
-        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-        const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-    void DestroyDebugUtilsMessengerEXT(VkInstance instance,
-        VkDebugUtilsMessengerEXT debugMessenger,
-        const VkAllocationCallbacks* pAllocator);
-    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-    void pickPhysicalDevice();
-    bool isDeviceSuitable(VkPhysicalDevice device);
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-    void createLogicalDevice();
+    void InitWindow();
+    void InitVulkan();
+    void MainLoop();
+    void CleanUp();
+    static void CheckExtensionSupport();
+    void CreateInstance();
+    static bool CheckValidationLayerSupport();
+    static std::vector<const char*> GetRequiredExtensions();
+    static VKAPI_ATTR VkBool32 VKAPI_CALL
+    DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                  VkDebugUtilsMessageTypeFlagsEXT message_type,
+                  const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data,
+                  void* p_user_data);
+    void SetupDebugMessenger();
+    static VkResult CreateDebugUtilsMessengerEXT(
+        VkInstance instance,
+        const VkDebugUtilsMessengerCreateInfoEXT* p_create_info,
+        const VkAllocationCallbacks* p_allocator,
+        VkDebugUtilsMessengerEXT* p_debug_messenger);
+    static void DestroyDebugUtilsMessengerEXT(
+        VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger,
+        const VkAllocationCallbacks* p_allocator);
+    static void PopulateDebugMessengerCreateInfo(
+        VkDebugUtilsMessengerCreateInfoEXT& create_info);
+    void PickPhysicalDevice();
+    bool IsDeviceSuitable(VkPhysicalDevice device);
+    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+    void CreateLogicalDevice();
+    void CreateSurface();
+    static bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+    static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(
+        const std::vector<VkSurfaceFormatKHR>& available_formats);
+    static VkPresentModeKHR ChooseSwapPresentMode(
+        const std::vector<VkPresentModeKHR>& available_present_modes);
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    void CreateSwapChain();
+    void CreateImageViews();
+
+   public:
+    void Run();
 };
 
-#endif // TRIANGLE_APPLICATION_H
+#endif  // TRIANGLE_APPLICATION_H
