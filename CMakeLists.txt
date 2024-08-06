@@ -71,9 +71,9 @@ find_package(Vulkan REQUIRED)
 include_directories(${GLFW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS})
 
 add_executable(VulkanWindow 
-	vulkan_window/vulkan_window.cpp 
-	vulkan_window/triangle_application.cpp 
-	vulkan_window/triangle_application.hpp
+	src/vulkan_window.cpp
+	src/triangle_application.cpp
+	src/triangle_application.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB} ${GLFW_LIB})
