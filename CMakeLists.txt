@@ -17,7 +17,6 @@ set(VULKAN_INCLUDE_DIRS "C:\\VulkanSDK\\1.3.290.0\\Include")
 set(VULKAN_LIB_DIR "C:\\VulkanSDK\\1.3.290.0\\Lib")
 set(VULKAN_LIB "C:\\VulkanSDK\\1.3.290.0\\Lib\\vulkan-1.lib"
 "C:\\VulkanSDK\\1.3.290.0\\Lib\\dxcompiler.lib"
-
 "C:\\VulkanSDK\\1.3.290.0\\Lib\\GenericCodeGen.lib"
 "C:\\VulkanSDK\\1.3.290.0\\Lib\\glslang-default-resource-limits.lib"
 "C:\\VulkanSDK\\1.3.290.0\\Lib\\glslang.lib"
