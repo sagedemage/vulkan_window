@@ -59,7 +59,8 @@ set(GLFW_LIB "C:\\vclib\\glfw-3.4.bin.WIN64\\lib-vc2022\\glfw3.lib"
 set(GLEW_INCLUDE_DIRS "C:\\vclib\\glew-2.1.0\\include")
 set(GLEW_LIB_DIR "C:\\vclib\\glew-2.1.0\\lib")
 set(GLEW_LIB "C:\\vclib\\glew-2.1.0\\lib\\Release\\x64\\glew32.lib"
-"C:\\vclib\\glew-2.1.0\\lib\\Release\\x64\\glew32s.lib")
+"C:\\vclib\\glew-2.1.0\\lib\\Release\\x64\\glew32s.lib"
+)
 
 # GLM
 set(GLM_INCLUDE_DIRS "C:\\vclib\\glm")
