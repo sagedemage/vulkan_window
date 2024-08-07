@@ -14,7 +14,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	set(WARNING_FLAGS "-Werror -Wpedantic -Wall -Wextra -Wno-zero-as-null-pointer-constant -Wno-unsafe-buffer-usage -Wno-c++98-compat-pedantic -Wno-documentation -Wno-documentation-unknown-command -Wno-nonportable-system-include-path -Wno-sign-conversion -Wno-shadow -Wno-cast-function-type-strict -Wno-old-style-cast -Wno-unused-parameter")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	# MSVC compiler
-	set(WARNING_FLAGS "/Wall")
+	set(WARNING_FLAGS "/Wall /Wv:19.31")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPTIMIZE_FLAG} ${WARNING_FLAGS}")
