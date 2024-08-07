@@ -751,8 +751,8 @@ void TriangleApplication::CreateGraphicsPipeline() {
     frag_shader_stage_info.pName = "main";
 
     // Define an attray that contains these two structures
-    std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages = {
-        vert_shader_stage_info, frag_shader_stage_info};
+    /*std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages = {
+        vert_shader_stage_info, frag_shader_stage_info};*/
 
     // Fill in the information for the vertex input
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};
@@ -924,3 +924,4 @@ VkShaderModule TriangleApplication::CreateShaderModule(
     }
     return shader_module;
 }
+
