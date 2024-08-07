@@ -40,8 +40,11 @@ const std::array<const char*, 1> VALIDATION_LAYERS = {
     "VK_LAYER_KHRONOS_validation"};
 
 // Declare a list of required device extensions
-const std::array<const char*, 1> DEVICE_EXTENSIONS = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+const std::array<const char*, 3> DEVICE_EXTENSIONS = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
+    VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME,
+    };
 
 #define NDEBUG
 
