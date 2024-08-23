@@ -1,0 +1,1 @@
+clang-tidy -format-style=file ../src/vulkan_window.cpp ../src/triangle_application.cpp ../src/triangle_application.hpp

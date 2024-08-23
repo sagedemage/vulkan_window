@@ -30,7 +30,6 @@ Checks:   '
 
 WarningsAsErrors: true
 HeaderFilterRegex: '.*'
-AnalyzeTemporaryDtors: false
 FormatStyle: 'file'
 
 # Add the following check options to comply with some aspects of the Google C++ Style Guide
