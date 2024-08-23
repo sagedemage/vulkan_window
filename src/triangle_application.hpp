@@ -69,6 +69,7 @@ class TriangleApplication {
     std::vector<VkImageView> swap_chain_image_views;
     VkFormat swap_chain_image_format{};
     VkExtent2D swap_chain_extent{};
+    VkRenderPass render_pass;
     VkPipelineLayout pipeline_layout;
 
     struct QueueFamilyIndices {
@@ -125,6 +126,7 @@ class TriangleApplication {
     void CreateGraphicsPipeline();
     static std::vector<char> ReadFile(const std::string& filename);
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
+    void CreateRenderPass();
 
    public:
     void Run();
