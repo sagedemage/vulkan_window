@@ -879,6 +879,7 @@ void TriangleApplication::CreateGraphicsPipeline() {
     pipeline_layout_info.pPushConstantRanges = nullptr;  // Optional
     pipeline_layout_info.flags =
         VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT;
+    pipeline_layout_info.pNext = NULL;
 
     // Create pipeline layout
     if (vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr,
