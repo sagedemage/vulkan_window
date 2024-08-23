@@ -1008,7 +1008,7 @@ void TriangleApplication::CreateRenderPass() {
     - pPreserveAttachments: Attachments that are not used by this subpass, but
     for which the data must be preserved
     */
-    subpass.colorAttachmentCount = 3;
+    subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &color_attachment_ref;
 
     /* Render pass */
