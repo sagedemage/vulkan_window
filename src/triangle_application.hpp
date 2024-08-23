@@ -71,6 +71,7 @@ class TriangleApplication {
     VkExtent2D swap_chain_extent{};
     VkRenderPass render_pass;
     VkPipelineLayout pipeline_layout;
+    VkPipeline graphics_pipeline;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
