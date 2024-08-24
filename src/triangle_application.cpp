@@ -41,6 +41,7 @@ void TriangleApplication::InitVulkan() {
     CreateImageViews();
     CreateRenderPass();
     CreateGraphicsPipeline();
+    CreateFramebuffers();
 }
 
 void TriangleApplication::MainLoop() {
@@ -52,6 +53,10 @@ void TriangleApplication::MainLoop() {
 
 void TriangleApplication::CleanUp() {
     /* Clean up resources */
+    for (auto framebuffer : swap_chain_framebuffers) {
+        vkDestroyFramebuffer(device, framebuffer, nullptr);
+    }
+
     vkDestroyPipeline(device, graphics_pipeline, nullptr);
 
     vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
@@ -1050,5 +1055,32 @@ void TriangleApplication::CreateRenderPass() {
     if (vkCreateRenderPass(device, &render_pass_info, nullptr, &render_pass) !=
         VK_SUCCESS) {
         throw std::runtime_error("failed to create render pass!");
+    }
+}
+
+void TriangleApplication::CreateFramebuffers() {
+    // Resize the container to hold all of the framebuffers
+    swap_chain_framebuffers.resize(swap_chain_image_views.size());
+
+    // iterate through the image views and create the framebuffers from them
+    for (size_t i = 0; i < swap_chain_image_views.size(); i++) {
+        std::array<VkImageView, 1> attachments = {
+            swap_chain_image_views[i]
+        };
+
+        // Describe framebuffer information
+        VkFramebufferCreateInfo framebuffer_info{};
+        framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebuffer_info.renderPass = render_pass;
+        framebuffer_info.attachmentCount = 1;
+        framebuffer_info.pAttachments = attachments.data();
+        framebuffer_info.width = swap_chain_extent.width;
+        framebuffer_info.height = swap_chain_extent.height;
+        framebuffer_info.layers = 1;
+
+        // Create framebuffer
+        if (vkCreateFramebuffer(device, &framebuffer_info, nullptr, &swap_chain_framebuffers[i]) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create framebuffer!");
+        }
     }
 }

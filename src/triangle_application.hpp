@@ -72,6 +72,7 @@ class TriangleApplication {
     VkRenderPass render_pass{};
     VkPipelineLayout pipeline_layout{};
     VkPipeline graphics_pipeline{};
+    std::vector<VkFramebuffer> swap_chain_framebuffers;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
@@ -128,6 +129,7 @@ class TriangleApplication {
     static std::vector<char> ReadFile(const std::string& filename);
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
     void CreateRenderPass();
+    void CreateFramebuffers();
 
    public:
     void Run();
