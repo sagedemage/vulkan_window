@@ -23,6 +23,7 @@
 #include <cstdint>  // Required for uint32_t
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <limits>  // Required for std::numeric_limits
 #include <map>
@@ -39,8 +40,11 @@ const std::array<const char*, 1> VALIDATION_LAYERS = {
     "VK_LAYER_KHRONOS_validation"};
 
 // Declare a list of required device extensions
-const std::array<const char*, 1> DEVICE_EXTENSIONS = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+const std::array<const char*, 3> DEVICE_EXTENSIONS = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
+    VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME,
+};
 
 #define NDEBUG
 
@@ -65,6 +69,9 @@ class TriangleApplication {
     std::vector<VkImageView> swap_chain_image_views;
     VkFormat swap_chain_image_format{};
     VkExtent2D swap_chain_extent{};
+    VkRenderPass render_pass{};
+    VkPipelineLayout pipeline_layout{};
+    VkPipeline graphics_pipeline{};
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
@@ -117,6 +124,10 @@ class TriangleApplication {
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     void CreateSwapChain();
     void CreateImageViews();
+    void CreateGraphicsPipeline();
+    static std::vector<char> ReadFile(const std::string& filename);
+    VkShaderModule CreateShaderModule(const std::vector<char>& code);
+    void CreateRenderPass();
 
    public:
     void Run();

@@ -21,7 +21,10 @@ Checks:   '
           -readability-make-member-function-const,
           -readability-identifier-length,
           -llvm-header-guard,
-          -performance-avoid-endl
+          -performance-avoid-endl,
+          -cppcoreguidelines-pro-type-reinterpret-cast,
+          -cppcoreguidelines-pro-type-union-access,
+          -cppcoreguidelines-pro-bounds-pointer-arithmetic,
           '
 # Trojan Source
 # The misc-misleading-identifier, misc-homoglyph, and misc-misleading-bidirectional are
@@ -30,7 +33,6 @@ Checks:   '
 
 WarningsAsErrors: true
 HeaderFilterRegex: '.*'
-AnalyzeTemporaryDtors: false
 FormatStyle: 'file'
 
 # Add the following check options to comply with some aspects of the Google C++ Style Guide
