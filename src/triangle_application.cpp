@@ -146,9 +146,7 @@ void TriangleApplication::CreateInstance() {
         create_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
 
         PopulateDebugMessengerCreateInfo(debug_create_info);
-        create_info.pNext =
-            reinterpret_cast<VkDebugUtilsMessengerCreateInfoEXT*>(
-                &debug_create_info);
+        create_info.pNext = &debug_create_info;
     } else {
         create_info.enabledLayerCount = 0;
         create_info.pNext = nullptr;
@@ -928,7 +926,7 @@ std::vector<char> TriangleApplication::ReadFile(const std::string& filename) {
     }
 
     // determine the size of the file and allocate a buffer
-    size_t file_size = static_cast<size_t>(file.tellg());
+    std::streamsize file_size = static_cast<std::streamsize>(file.tellg());
     std::vector<char> buffer(file_size);
 
     // seek back to the beginning of the file and read all of the bytes
