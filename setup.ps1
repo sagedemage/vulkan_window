@@ -1,3 +1,4 @@
+# Unix Makefiles version
 rm -r -fo "build"
 $env:CC="C:\Program Files\LLVM\bin\clang.exe"
 $env:CCX="C:\Program Files\LLVM\bin\clang++.exe"
