@@ -779,7 +779,7 @@ void TriangleApplication::CreateGraphicsPipeline() {
     //
     // Difference between Viewport and Scissor
     // A viewport define the transformation from the image to the framebuffer
-    // A scissor define which regions picels will actually be stored
+    // A scissor define which regions pixels will actually be stored
 
     // Fill in the information for viewport state
     VkPipelineViewportStateCreateInfo viewport_state{};
@@ -918,7 +918,7 @@ void TriangleApplication::CreateGraphicsPipeline() {
 }
 
 std::vector<char> TriangleApplication::ReadFile(const std::string& filename) {
-    // load vinary data from a file
+    // load binary data from a file
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
@@ -965,10 +965,10 @@ void TriangleApplication::CreateRenderPass() {
     color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
     // loadOp and storeOp determine what to do with the data in the attachment
-    // before and after rednering
+    // before and after rendering
     /*
     The following choices for loadOp:
-    - VK_ATTACHMENT_LOAD_OP_LOAD: Preserve the exsiting contents of the
+    - VK_ATTACHMENT_LOAD_OP_LOAD: Preserve the existing contents of the
     attachment
     - VK_ATTACHMENT_LOAD_OP_CLEAR: Clear the values to a constant at the start
     - VK_ATTACHMENT_LOAD_OP_DONT_CARE: Existing contents are undefined
@@ -989,7 +989,7 @@ void TriangleApplication::CreateRenderPass() {
     color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
-    // Textures and framebuffers are represented byu VkImage objects with a
+    // Textures and framebuffers are represented by VkImage objects with a
     // certain pixel format. However the layout of the pixels in memeory can
     // change based on what you're trying to do with an image.
 
@@ -1008,11 +1008,12 @@ void TriangleApplication::CreateRenderPass() {
     color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     /* Subpasses and attachment references */
-    // Describe the color attachement references
+    // Describe the color attachement references.
     // The attachment parameter specifies the attachment to reference by its
-    // index The layout specifies which layout we would like the attachment to
+    // index.
+    // The layout specifies which layout we would like the attachment to
     // have during a subpass VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL layout
-    // gives the best performance
+    // gives the best performance.
     VkAttachmentReference color_attachment_ref{};
     color_attachment_ref.attachment = 0;
     color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -1024,7 +1025,7 @@ void TriangleApplication::CreateRenderPass() {
     // explcit about this being a graphics subpass.
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
-    // THe index of the attachement in this array is directly referenced from
+    // The index of the attachement in this array is directly referenced from
     // the fragment shader with the layout(location = 0) out vec4 outColor
     // directive!
     /* The other types of attachements that can be referenced by a subpass:
