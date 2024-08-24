@@ -76,10 +76,10 @@ set(GLM_LIB_DIR "C:\\vclib\\glm")
 
 find_package(Vulkan REQUIRED)
 
-include_directories(${GLFW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS})
+include_directories(SYSTEM ${GLFW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS})
 
 file(COPY src/shaders DESTINATION ${CMAKE_BINARY_DIR})
-file(COPY lint_codebase.bat DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY lint_codebase.ps1 DESTINATION ${CMAKE_BINARY_DIR})
 
 add_executable(VulkanWindow 
 	src/vulkan_window.cpp
