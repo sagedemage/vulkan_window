@@ -825,7 +825,7 @@ void TriangleApplication::CreateGraphicsPipeline() {
     multisampling.alphaToCoverageEnable = VK_FALSE;  // Optional
     multisampling.alphaToOneEnable = VK_FALSE;       // Optional
 
-    // Color blending is when after a fragment shader has retruned a color,
+    // Color blending is when after a fragment shader has returned a color,
     // it needs to be combined with the color that is already in the
     // framebuffer.
 
@@ -870,7 +870,7 @@ void TriangleApplication::CreateGraphicsPipeline() {
         static_cast<uint32_t>(dynamic_states.size());
     dynamic_state.pDynamicStates = dynamic_states.data();
 
-    // Fill in the information for the piepline layout
+    // Fill in the information for the pipeline layout
     VkPipelineLayoutCreateInfo pipeline_layout_info;
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_info.setLayoutCount = 0;             // Optional
