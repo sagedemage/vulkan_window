@@ -42,6 +42,7 @@ void TriangleApplication::InitVulkan() {
     CreateRenderPass();
     CreateGraphicsPipeline();
     CreateFramebuffers();
+    CreateCommandBuffer();
 }
 
 void TriangleApplication::MainLoop() {
@@ -53,6 +54,8 @@ void TriangleApplication::MainLoop() {
 
 void TriangleApplication::CleanUp() {
     /* Clean up resources */
+    vkDestroyCommandPool(device, command_pool, nullptr);
+
     for (auto framebuffer : swap_chain_framebuffers) {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
@@ -1064,9 +1067,7 @@ void TriangleApplication::CreateFramebuffers() {
 
     // iterate through the image views and create the framebuffers from them
     for (size_t i = 0; i < swap_chain_image_views.size(); i++) {
-        std::array<VkImageView, 1> attachments = {
-            swap_chain_image_views[i]
-        };
+        std::array<VkImageView, 1> attachments = {swap_chain_image_views[i]};
 
         // Describe framebuffer information
         VkFramebufferCreateInfo framebuffer_info{};
@@ -1079,8 +1080,166 @@ void TriangleApplication::CreateFramebuffers() {
         framebuffer_info.layers = 1;
 
         // Create framebuffer
-        if (vkCreateFramebuffer(device, &framebuffer_info, nullptr, &swap_chain_framebuffers[i]) != VK_SUCCESS) {
+        if (vkCreateFramebuffer(device, &framebuffer_info, nullptr,
+                                &swap_chain_framebuffers[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create framebuffer!");
         }
+    }
+}
+
+void TriangleApplication::CreateCommandPool() {
+    QueueFamilyIndices queue_family_indices =
+        FindQueueFamilies(physical_device);
+
+    /* Possible flags for command pools:
+    - VK_COMMAND_POOL_CREATE_TRANSIENT_BIT: Hint that command buffers are
+    rerecorded with new commands very often. This may change memory allocation
+    behavior.
+    - VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: Allow command buffers to
+    be rerecorded individually, without this flags they all have to be reset
+    together.
+    */
+
+    // This will be recording a command buffer every frame, we want to be able
+    // to reset and rerecord over it.
+    // The VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT flag bit must
+    // be set for the command pool.
+
+    // Describe pool information
+    VkCommandPoolCreateInfo pool_info{};
+    pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+    if (queue_family_indices.graphics_family.has_value()) {
+        pool_info.queueFamilyIndex =
+            queue_family_indices.graphics_family.value();
+    }
+
+    // Create the command pool
+    if (vkCreateCommandPool(device, &pool_info, nullptr, &command_pool) !=
+        VK_SUCCESS) {
+        throw std::runtime_error("failed to create command pool!");
+    }
+}
+
+void TriangleApplication::CreateCommandBuffer() {
+    /* The level parameter specifies if the allocated command bufers are primary
+     * or secondary command buffers.
+     - VK_COMMAND_BUFFER_LEVEL_PRIMARY: Can be submitted to a queue for
+     execution but it cannot be called from the other command buffers.
+     - VK_COMMAND_BUFFER_LEVEL_SECONDARY: Cannot be submitted directly, but it
+     can be called from the primary command buffers.
+     */
+    // Describe the allocation information for the command buffer
+    VkCommandBufferAllocateInfo alloc_info{};
+    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.commandPool = command_pool;
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandBufferCount = 1;
+
+    // Allocate command buffers
+    if (vkAllocateCommandBuffers(device, &alloc_info, &command_buffer) !=
+        VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate command buffers!");
+    }
+}
+
+void TriangleApplication::RecordCommandBuffer(VkCommandBuffer command_buffer,
+                                              uint32_t image_index) {
+    /* Command buffer recording */
+    /* The flags parameter specifies how we're going to use the command buffer.
+    The following flags are available:
+    - VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT: The command buffer wil be
+    rerecorded right after executing it once.
+    - VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT: This is a secondary
+    command buffer that will be entirely within a single render pass.
+    - VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT: The command buffer can be
+    resubmitted while it is also already pending an execution.
+    */
+    // Describe the details about the usage of this specific command buffer
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = 0;                   // Optional
+    begin_info.pInheritanceInfo = nullptr;  // Optional
+
+    // Record the command buffer
+    if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
+        throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    /* Stating a render pass */
+    // Describe the render pass information
+    VkRenderPassBeginInfo render_pass_info{};
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    render_pass_info.renderPass = render_pass;
+    render_pass_info.framebuffer = swap_chain_framebuffers[image_index];
+
+    // The two parameters define the size of the render area
+    render_pass_info.renderArea.offset = {0, 0};
+    render_pass_info.renderArea.extent = swap_chain_extent;
+
+    // THe two paramers define the clear values to use for
+    // VK_ATTACHMENT_LOAD_OP_CLEAR, which we used as load operation for the
+    // color attachment. I've defined the clear color to simply be black with
+    // 100% opacity.
+    VkClearValue clear_color = {{{0.0F, 0.0F, 0.0F, 1.0F}}};
+    render_pass_info.clearValueCount = 1;
+    render_pass_info.pClearValues = &clear_color;
+
+    /* The final parameter defines how the drawing commands within the render
+    pass will be provided. It can have one of the two values:
+    - VK_SUBPASS_CONTENTS_INLINE: The render pass commands will be embedded in
+    the primary command buffer itself and no secondary command buffers will be
+    executed.
+    - VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS: The render pass
+    commands will be executed from the secondary command buffers.
+    */
+
+    // Begin render pass
+    vkCmdBeginRenderPass(command_buffer, &render_pass_info,
+                         VK_SUBPASS_CONTENTS_INLINE);
+
+    /* Basic draw commands */
+    // Bind the graphics pipeline
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                      graphics_pipeline);
+
+    // Set the viewport and scissor state in the command buffer before issuing
+    // the draw command.
+    VkViewport viewport{};
+    viewport.x = 0.0F;
+    viewport.y = 0.0F;
+    viewport.width = static_cast<float>(swap_chain_extent.width);
+    viewport.height = static_cast<float>(swap_chain_extent.height);
+    viewport.minDepth = 0.0F;
+    viewport.maxDepth = 1.0F;
+    vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = swap_chain_extent;
+    vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+    /* The vkCmdDraw function has the following parameters aside from the
+     * command buffer:
+     - vertexCount: Number of vertices to draw
+     - instanceCount: Used for instanced rendering, set 1 if you're not doing
+     that.
+     - firstVertex: Used as offset into the vertex buffer, defines the lowest
+     value of gl_VertexIndex.
+     - firstInstance: Used as an offset for instanced rendering, defines the
+     lowest value of gl_InstanceIndex.
+     */
+
+    // Issue the draw command for the triangle
+    vkCmdDraw(command_buffer, 3, 1, 0, 0);
+
+    /* Finishing up */
+    // End the render pass
+    vkCmdEndRenderPass(command_buffer);
+
+    // Finish recording the command buffer
+    if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to record command buffer!");
     }
 }
