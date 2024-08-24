@@ -1,4 +1,4 @@
-# Unix Makefiles version
+# Unix Makefiles version with Clang and LLVM
 Remove-Item -r -fo "build"
 $env:CC="C:\Program Files\LLVM\bin\clang.exe"
 $env:CCX="C:\Program Files\LLVM\bin\clang++.exe"
