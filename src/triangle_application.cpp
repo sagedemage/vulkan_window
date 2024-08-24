@@ -1113,6 +1113,8 @@ void TriangleApplication::CreateCommandPool() {
     if (queue_family_indices.graphics_family.has_value()) {
         pool_info.queueFamilyIndex =
             queue_family_indices.graphics_family.value();
+    } else {
+        throw std::runtime_error("Graphics family has no value!");
     }
 
     // Create the command pool
