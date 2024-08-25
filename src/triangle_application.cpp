@@ -1318,15 +1318,16 @@ void TriangleApplication::DrawFrame() {
 
     // Wait until the revious frame has finished, so that the command buffer and
     // semaphores are available to use.
-    vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE,
+                    UINT64_MAX);
 
     // Reset the fence to the unsignaled state
     vkResetFences(device, 1, &in_flight_fences[current_frame]);
 
     uint32_t image_index = 0;
     vkAcquireNextImageKHR(device, swap_chain, UINT64_MAX,
-                          image_available_semaphores[current_frame], VK_NULL_HANDLE,
-                          &image_index);
+                          image_available_semaphores[current_frame],
+                          VK_NULL_HANDLE, &image_index);
 
     /* Reecording the command buffer */
     // check if the command buffer is able to be recorded
@@ -1340,7 +1341,8 @@ void TriangleApplication::DrawFrame() {
     VkSubmitInfo submit_info{};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    std::array<VkSemaphore, 1> wait_semaphores = {image_available_semaphores[current_frame]};
+    std::array<VkSemaphore, 1> wait_semaphores = {
+        image_available_semaphores[current_frame]};
     std::array<VkPipelineStageFlags, 1> wait_stages = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
@@ -1357,7 +1359,8 @@ void TriangleApplication::DrawFrame() {
 
     // The signalSemaphoreCount and pSignalSemaphores parameters specify which
     // semaphores to signal once the command buffer(s) have finished execution.
-    std::array<VkSemaphore, 1> signal_semaphores = {render_finished_semaphores[current_frame]};
+    std::array<VkSemaphore, 1> signal_semaphores = {
+        render_finished_semaphores[current_frame]};
     submit_info.signalSemaphoreCount = 1;
     submit_info.pSignalSemaphores = signal_semaphores.data();
 
@@ -1365,8 +1368,8 @@ void TriangleApplication::DrawFrame() {
     // executing before it records new commands into it.
 
     // Submit the command buffer to the graphics queue
-    if (vkQueueSubmit(graphics_queue, 1, &submit_info, in_flight_fences[current_frame]) !=
-        VK_SUCCESS) {
+    if (vkQueueSubmit(graphics_queue, 1, &submit_info,
+                      in_flight_fences[current_frame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
