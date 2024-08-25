@@ -73,8 +73,8 @@ class TriangleApplication {
     VkPipelineLayout pipeline_layout{};
     VkPipeline graphics_pipeline{};
     std::vector<VkFramebuffer> swap_chain_framebuffers;
-    VkCommandPool command_pool;
-    VkCommandBuffer command_buffer;
+    VkCommandPool command_pool = VK_NULL_HANDLE;
+    VkCommandBuffer command_buffer = VK_NULL_HANDLE;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
