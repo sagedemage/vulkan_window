@@ -75,6 +75,9 @@ class TriangleApplication {
     std::vector<VkFramebuffer> swap_chain_framebuffers;
     VkCommandPool command_pool = VK_NULL_HANDLE;
     VkCommandBuffer command_buffer = VK_NULL_HANDLE;
+    VkSemaphore image_available_semaphore = VK_NULL_HANDLE;
+    VkSemaphore render_finished_semaphore = VK_NULL_HANDLE;
+    VkFence in_flight_fence = VK_NULL_HANDLE;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
@@ -136,6 +139,8 @@ class TriangleApplication {
     void CreateCommandBuffer();
     void RecordCommandBuffer(VkCommandBuffer command_buffer,
                              uint32_t image_index);
+    void DrawFrame();
+    void CreateSyncObjects();
 
    public:
     void Run();
