@@ -42,6 +42,7 @@ void TriangleApplication::InitVulkan() {
     CreateRenderPass();
     CreateGraphicsPipeline();
     CreateFramebuffers();
+    CreateCommandPool();
     CreateCommandBuffer();
 }
 
