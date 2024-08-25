@@ -134,7 +134,8 @@ class TriangleApplication {
     void CreateFramebuffers();
     void CreateCommandPool();
     void CreateCommandBuffer();
-    void RecordCommandBuffer(VkCommandBuffer command_buffer, uint32_t image_index);
+    void RecordCommandBuffer(VkCommandBuffer command_buffer,
+                             uint32_t image_index);
 
    public:
     void Run();

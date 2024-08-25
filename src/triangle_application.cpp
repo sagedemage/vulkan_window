@@ -57,7 +57,7 @@ void TriangleApplication::CleanUp() {
     /* Clean up resources */
     vkDestroyCommandPool(device, command_pool, nullptr);
 
-    for (auto *framebuffer : swap_chain_framebuffers) {
+    for (auto* framebuffer : swap_chain_framebuffers) {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
 
@@ -67,7 +67,7 @@ void TriangleApplication::CleanUp() {
 
     vkDestroyRenderPass(device, render_pass, nullptr);
 
-    for (auto *image_view : swap_chain_image_views) {
+    for (auto* image_view : swap_chain_image_views) {
         vkDestroyImageView(device, image_view, nullptr);
     }
 
