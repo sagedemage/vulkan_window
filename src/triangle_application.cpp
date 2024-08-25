@@ -43,7 +43,7 @@ void TriangleApplication::InitVulkan() {
     CreateGraphicsPipeline();
     CreateFramebuffers();
     CreateCommandPool();
-    CreateCommandBuffer();
+    CreateCommandBuffers();
     CreateSyncObjects();
 }
 
@@ -64,9 +64,11 @@ void TriangleApplication::MainLoop() {
 
 void TriangleApplication::CleanUp() {
     /* Clean up resources */
-    vkDestroySemaphore(device, image_available_semaphore, nullptr);
-    vkDestroySemaphore(device, render_finished_semaphore, nullptr);
-    vkDestroyFence(device, in_flight_fence, nullptr);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroySemaphore(device, image_available_semaphores[i], nullptr);
+        vkDestroySemaphore(device, render_finished_semaphores[i], nullptr);
+        vkDestroyFence(device, in_flight_fences[i], nullptr);
+    }
 
     vkDestroyCommandPool(device, command_pool, nullptr);
 
@@ -1169,7 +1171,7 @@ void TriangleApplication::CreateCommandPool() {
     }
 }
 
-void TriangleApplication::CreateCommandBuffer() {
+void TriangleApplication::CreateCommandBuffers() {
     /* The level parameter specifies if the allocated command bufers are primary
      * or secondary command buffers.
      - VK_COMMAND_BUFFER_LEVEL_PRIMARY: Can be submitted to a queue for
@@ -1177,15 +1179,19 @@ void TriangleApplication::CreateCommandBuffer() {
      - VK_COMMAND_BUFFER_LEVEL_SECONDARY: Cannot be submitted directly, but it
      can be called from the primary command buffers.
      */
+    // Resize command buffers vector
+    command_buffers.resize(MAX_FRAMES_IN_FLIGHT);
+
     // Describe the allocation information for the command buffer
     VkCommandBufferAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     alloc_info.commandPool = command_pool;
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = 1;
+    alloc_info.commandBufferCount =
+        static_cast<uint32_t>(command_buffers.size());
 
     // Allocate command buffers
-    if (vkAllocateCommandBuffers(device, &alloc_info, &command_buffer) !=
+    if (vkAllocateCommandBuffers(device, &alloc_info, command_buffers.data()) !=
         VK_SUCCESS) {
         throw std::runtime_error("failed to allocate command buffers!");
     }
@@ -1312,29 +1318,29 @@ void TriangleApplication::DrawFrame() {
 
     // Wait until the revious frame has finished, so that the command buffer and
     // semaphores are available to use.
-    vkWaitForFences(device, 1, &in_flight_fence, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
 
     // Reset the fence to the unsignaled state
-    vkResetFences(device, 1, &in_flight_fence);
+    vkResetFences(device, 1, &in_flight_fences[current_frame]);
 
     uint32_t image_index = 0;
     vkAcquireNextImageKHR(device, swap_chain, UINT64_MAX,
-                          image_available_semaphore, VK_NULL_HANDLE,
+                          image_available_semaphores[current_frame], VK_NULL_HANDLE,
                           &image_index);
 
     /* Reecording the command buffer */
     // check if the command buffer is able to be recorded
-    vkResetCommandBuffer(command_buffer, 0);
+    vkResetCommandBuffer(command_buffers[current_frame], 0);
 
     // record the commands
-    RecordCommandBuffer(command_buffer, image_index);
+    RecordCommandBuffer(command_buffers[current_frame], image_index);
 
     /* Submitting the command buffer */
     // Configure queue submission and synchronization
     VkSubmitInfo submit_info{};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    std::array<VkSemaphore, 1> wait_semaphores = {image_available_semaphore};
+    std::array<VkSemaphore, 1> wait_semaphores = {image_available_semaphores[current_frame]};
     std::array<VkPipelineStageFlags, 1> wait_stages = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
@@ -1347,11 +1353,11 @@ void TriangleApplication::DrawFrame() {
     // The two parameters specify which command buffers to actually submit for
     // execution.
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &command_buffer;
+    submit_info.pCommandBuffers = &command_buffers[current_frame];
 
     // The signalSemaphoreCount and pSignalSemaphores parameters specify which
     // semaphores to signal once the command buffer(s) have finished execution.
-    std::array<VkSemaphore, 1> signal_semaphores = {render_finished_semaphore};
+    std::array<VkSemaphore, 1> signal_semaphores = {render_finished_semaphores[current_frame]};
     submit_info.signalSemaphoreCount = 1;
     submit_info.pSignalSemaphores = signal_semaphores.data();
 
@@ -1359,7 +1365,7 @@ void TriangleApplication::DrawFrame() {
     // executing before it records new commands into it.
 
     // Submit the command buffer to the graphics queue
-    if (vkQueueSubmit(graphics_queue, 1, &submit_info, in_flight_fence) !=
+    if (vkQueueSubmit(graphics_queue, 1, &submit_info, in_flight_fences[current_frame]) !=
         VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
@@ -1389,6 +1395,9 @@ void TriangleApplication::DrawFrame() {
 
     // Submit the request to present an image to the swap chain.
     vkQueuePresentKHR(present_queue, &present_info);
+
+    // Advance to the next frame every time
+    current_frame = (current_frame + 1) & MAX_FRAMES_IN_FLIGHT;
 }
 
 void TriangleApplication::CreateSyncObjects() {
@@ -1400,6 +1409,11 @@ void TriangleApplication::CreateSyncObjects() {
     - Present that image to the screen for presentation, returing it to the
     swapchain
     */
+
+    // Resize the following vectors
+    image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    in_flight_fences.resize(MAX_FRAMES_IN_FLIGHT);
 
     // Describe semaphore information
     VkSemaphoreCreateInfo semaphore_info{};
@@ -1418,13 +1432,16 @@ void TriangleApplication::CreateSyncObjects() {
     fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    // Create semaphores and fence
-    if (vkCreateSemaphore(device, &semaphore_info, nullptr,
-                          &image_available_semaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(device, &semaphore_info, nullptr,
-                          &render_finished_semaphore) != VK_SUCCESS ||
-        vkCreateFence(device, &fence_info, nullptr, &in_flight_fence) !=
-            VK_SUCCESS) {
-        throw std::runtime_error("failed to create semaphores!");
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        // Create semaphores and fence
+        if (vkCreateSemaphore(device, &semaphore_info, nullptr,
+                              &image_available_semaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(device, &semaphore_info, nullptr,
+                              &render_finished_semaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(device, &fence_info, nullptr, &in_flight_fences[i]) !=
+                VK_SUCCESS) {
+            throw std::runtime_error(
+                "failed to create synchronization objects for a frame!");
+        }
     }
 }
