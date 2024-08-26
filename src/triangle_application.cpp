@@ -28,6 +28,12 @@ void TriangleApplication::InitWindow() {
 
     // Create the GLFW window
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan window", nullptr, nullptr);
+
+    // Get reference to the GLFWwindow (pointer)
+    glfwSetWindowUserPointer(window, this);
+
+    // Detect resizes
+    glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 }
 
 void TriangleApplication::InitVulkan() {
@@ -64,6 +70,13 @@ void TriangleApplication::MainLoop() {
 
 void TriangleApplication::CleanUp() {
     /* Clean up resources */
+    CleanupSwapChain();
+
+    vkDestroyPipeline(device, graphics_pipeline, nullptr);
+    vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
+
+    vkDestroyRenderPass(device, render_pass, nullptr);
+
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(device, image_available_semaphores[i], nullptr);
         vkDestroySemaphore(device, render_finished_semaphores[i], nullptr);
@@ -72,22 +85,6 @@ void TriangleApplication::CleanUp() {
 
     vkDestroyCommandPool(device, command_pool, nullptr);
 
-    for (auto* framebuffer : swap_chain_framebuffers) {
-        vkDestroyFramebuffer(device, framebuffer, nullptr);
-    }
-
-    vkDestroyPipeline(device, graphics_pipeline, nullptr);
-
-    vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
-
-    vkDestroyRenderPass(device, render_pass, nullptr);
-
-    for (auto* image_view : swap_chain_image_views) {
-        vkDestroyImageView(device, image_view, nullptr);
-    }
-
-    vkDestroySwapchainKHR(device, swap_chain, nullptr);
-
     vkDestroyDevice(device, nullptr);
 
     if (ENABLE_VALIDATION_LAYERS) {
@@ -95,7 +92,6 @@ void TriangleApplication::CleanUp() {
     }
 
     vkDestroySurfaceKHR(instance, surface, nullptr);
-
     vkDestroyInstance(instance, nullptr);
 
     glfwDestroyWindow(window);
@@ -1321,13 +1317,33 @@ void TriangleApplication::DrawFrame() {
     vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE,
                     UINT64_MAX);
 
-    // Reset the fence to the unsignaled state
-    vkResetFences(device, 1, &in_flight_fences[current_frame]);
+    /* Suboptimal or out-of-date swap chain
+    The vkAcquireNextImageKHR and vkQueuePresentKHR functions can return the
+    following special values to indicate this:
+    - VK_ERROR_OUT_OF_DATE_KHR: The swap chain has become incompatible with the
+    surface and can no longer be used for rendering. Usually happens after a
+    window resize.
+    - VK_SUBOPTIMAL_KHR: The swap chain can still be used to
+    successfully present to the surface, but the surface properties are no
+    longer matched exactly.
+    */
 
     uint32_t image_index = 0;
-    vkAcquireNextImageKHR(device, swap_chain, UINT64_MAX,
-                          image_available_semaphores[current_frame],
-                          VK_NULL_HANDLE, &image_index);
+    VkResult result =
+        vkAcquireNextImageKHR(device, swap_chain, UINT64_MAX,
+                              image_available_semaphores[current_frame],
+                              VK_NULL_HANDLE, &image_index);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        RecreateSwapChain();
+        return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    /* Fixing a deadlock */
+    // Only reset the fence if we are submitting work
+    vkResetFences(device, 1, &in_flight_fences[current_frame]);
 
     /* Reecording the command buffer */
     // check if the command buffer is able to be recorded
@@ -1397,7 +1413,16 @@ void TriangleApplication::DrawFrame() {
     present_info.pResults = nullptr;  // Optional
 
     // Submit the request to present an image to the swap chain.
-    vkQueuePresentKHR(present_queue, &present_info);
+    result = vkQueuePresentKHR(present_queue, &present_info);
+
+    // Handling resizes explicitly
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
+        framebuffer_resized) {
+        framebuffer_resized = false;
+        RecreateSwapChain();
+    } else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
 
     // Advance to the next frame every time
     current_frame = (current_frame + 1) & MAX_FRAMES_IN_FLIGHT;
@@ -1447,4 +1472,43 @@ void TriangleApplication::CreateSyncObjects() {
                 "failed to create synchronization objects for a frame!");
         }
     }
+}
+
+void TriangleApplication::RecreateSwapChain() {
+    /* Recreating the swap chain */
+    /* Handling minimization */
+    int width = 0;
+    int height = 0;
+    glfwGetFramebufferSize(window, &width, &height);
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(device);
+
+    CleanupSwapChain();
+
+    CreateSwapChain();
+    CreateImageViews();
+    CreateFramebuffers();
+}
+
+void TriangleApplication::CleanupSwapChain() {
+    for (size_t i = 0; i < swap_chain_framebuffers.size(); i++) {
+        vkDestroyFramebuffer(device, swap_chain_framebuffers[i], nullptr);
+    }
+
+    for (size_t i = 0; i < swap_chain_image_views.size(); i++) {
+        vkDestroyImageView(device, swap_chain_image_views[i], nullptr);
+    }
+
+    vkDestroySwapchainKHR(device, swap_chain, nullptr);
+}
+
+void TriangleApplication::FramebufferResizeCallback(GLFWwindow* window,
+                                                    int width, int height) {
+    auto app = reinterpret_cast<TriangleApplication*>(
+        glfwGetWindowUserPointer(window));
+    app->framebuffer_resized = true;
 }

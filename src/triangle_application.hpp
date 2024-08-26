@@ -82,6 +82,8 @@ class TriangleApplication {
     std::vector<VkFence> in_flight_fences;
     uint32_t current_frame = 0;
 
+    bool framebuffer_resized = false;
+
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
         std::optional<uint32_t> present_family;
@@ -144,6 +146,9 @@ class TriangleApplication {
                              uint32_t image_index);
     void DrawFrame();
     void CreateSyncObjects();
+    void RecreateSwapChain();
+    void CleanupSwapChain();
+    static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
 
    public:
     void Run();
