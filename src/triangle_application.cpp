@@ -23,8 +23,8 @@ void TriangleApplication::InitWindow() {
     // GLFW was originally designed to create an OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    // Disable handling resized windows
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    // Enable handling resized windows
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     // Create the GLFW window
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan window", nullptr, nullptr);
