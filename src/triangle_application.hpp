@@ -54,6 +54,8 @@ const bool ENABLE_VALIDATION_LAYERS = false;
 const bool ENABLE_VALIDATION_LAYERS = true;
 #endif
 
+const unsigned int MAX_FRAMES_IN_FLIGHT = 2;
+
 class TriangleApplication {
    private:
     GLFWwindow* window{};
@@ -72,6 +74,13 @@ class TriangleApplication {
     VkRenderPass render_pass{};
     VkPipelineLayout pipeline_layout{};
     VkPipeline graphics_pipeline{};
+    std::vector<VkFramebuffer> swap_chain_framebuffers;
+    VkCommandPool command_pool = VK_NULL_HANDLE;
+    std::vector<VkCommandBuffer> command_buffers;
+    std::vector<VkSemaphore> image_available_semaphores;
+    std::vector<VkSemaphore> render_finished_semaphores;
+    std::vector<VkFence> in_flight_fences;
+    uint32_t current_frame = 0;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
@@ -128,6 +137,13 @@ class TriangleApplication {
     static std::vector<char> ReadFile(const std::string& filename);
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
     void CreateRenderPass();
+    void CreateFramebuffers();
+    void CreateCommandPool();
+    void CreateCommandBuffers();
+    void RecordCommandBuffer(VkCommandBuffer command_buffer,
+                             uint32_t image_index);
+    void DrawFrame();
+    void CreateSyncObjects();
 
    public:
     void Run();
