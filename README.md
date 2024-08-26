@@ -3,7 +3,7 @@ Vulkan window written in C++
 
 ![Vulkan Window](./screenshots/vulkan_window.webp)
 
-## Resource:
+## Resource
 My code comments are based on the information from the **Vulkan Tutorial** website.
 Followed the instruction from the *Introduction* section and finish up to the *Drawing a triangle* section.
 - https://vulkan-tutorial.com/
