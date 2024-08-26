@@ -58,7 +58,7 @@ void TriangleApplication::MainLoop() {
     with the drawFrame method. It is not a good idea to clean up resources
     while drawing and presenation operations are happening. */
 
-    // Wait for operationss in a specific command queue to be finished
+    // Wait for operations in a specific command queue to be finished
     vkDeviceWaitIdle(device);
 }
 
@@ -1065,7 +1065,7 @@ void TriangleApplication::CreateRenderPass() {
     /* Subpass dependencies */
     VkSubpassDependency dependency{};
 
-    // The two fields specify the indices of the dependency and th
+    // The two fields specify the indices of the dependency and the
     // dependent subpass.
     // The special value VK_SUBPASS_EXTERNAL refers to implicit subpass before
     // or after the render pass depending on whether it is specifed in
@@ -1084,10 +1084,10 @@ void TriangleApplication::CreateRenderPass() {
     dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     dependency.srcAccessMask = 0;
 
-    // The operations that should wait in the color attachment stage and involve
-    // writing the color attachement. These settings will prevent the transition
-    // from happening until it's actually necessary (and allowed): when we want
-    // to start writing colors to it.
+    // The operations that should wait on this are in the color attachment stage
+    // and involve the writing of the color attachment. These settings will
+    // prevent the transition from happening until it's actually necessary (and
+    // allowed): when we want to start writing colors to it.
     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
@@ -1116,7 +1116,7 @@ void TriangleApplication::CreateFramebuffers() {
     for (size_t i = 0; i < swap_chain_image_views.size(); i++) {
         std::array<VkImageView, 1> attachments = {swap_chain_image_views[i]};
 
-        // Describe framebuffer information
+        // Describe the framebuffer information
         VkFramebufferCreateInfo framebuffer_info{};
         framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_info.renderPass = render_pass;
@@ -1126,7 +1126,7 @@ void TriangleApplication::CreateFramebuffers() {
         framebuffer_info.height = swap_chain_extent.height;
         framebuffer_info.layers = 1;
 
-        // Create framebuffer
+        // Create the framebuffer
         if (vkCreateFramebuffer(device, &framebuffer_info, nullptr,
                                 &swap_chain_framebuffers[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create framebuffer!");
@@ -1143,7 +1143,7 @@ void TriangleApplication::CreateCommandPool() {
     rerecorded with new commands very often. This may change memory allocation
     behavior.
     - VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: Allow command buffers to
-    be rerecorded individually, without this flags they all have to be reset
+    be rerecorded individually. Without this flag, they all have to be reset
     together.
     */
 
@@ -1152,7 +1152,7 @@ void TriangleApplication::CreateCommandPool() {
     // The VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT flag bit must
     // be set for the command pool.
 
-    // Describe pool information
+    // Describe the pool information
     VkCommandPoolCreateInfo pool_info{};
     pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -1182,7 +1182,7 @@ void TriangleApplication::CreateCommandBuffers() {
     // Resize command buffers vector
     command_buffers.resize(MAX_FRAMES_IN_FLIGHT);
 
-    // Describe the allocation information for the command buffer
+    // Describe the allocation information for the command buffers
     VkCommandBufferAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     alloc_info.commandPool = command_pool;
@@ -1220,7 +1220,7 @@ void TriangleApplication::RecordCommandBuffer(VkCommandBuffer command_buffer,
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
-    /* Stating a render pass */
+    /* Starting a render pass */
     // Describe the render pass information
     VkRenderPassBeginInfo render_pass_info{};
     render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1231,8 +1231,8 @@ void TriangleApplication::RecordCommandBuffer(VkCommandBuffer command_buffer,
     render_pass_info.renderArea.offset = {0, 0};
     render_pass_info.renderArea.extent = swap_chain_extent;
 
-    // THe two paramers define the clear values to use for
-    // VK_ATTACHMENT_LOAD_OP_CLEAR, which we used as load operation for the
+    // The two parameters define the clear values to use for
+    // VK_ATTACHMENT_LOAD_OP_CLEAR, which we used as the load operation for the
     // color attachment. I've defined the clear color to simply be black with
     // 100% opacity.
     VkClearValue clear_color = {{{0.0F, 0.0F, 0.0F, 1.0F}}};
@@ -1316,8 +1316,8 @@ void TriangleApplication::DrawFrame() {
     // value of a 64 bit unsigned integer.
     // UINT64_MAX disables the timeout.
 
-    // Wait until the revious frame has finished, so that the command buffer and
-    // semaphores are available to use.
+    // Wait until the previous frame has finished, so that the command buffer
+    // and semaphores are available to use.
     vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE,
                     UINT64_MAX);
 
@@ -1409,7 +1409,7 @@ void TriangleApplication::CreateSyncObjects() {
     happen on the GPU, such as:
     - Acquire an image from the swap chain
     - Execute commands that draw onto the acquired image
-    - Present that image to the screen for presentation, returing it to the
+    - Present that image to the screen for presentation, returning it to the
     swapchain
     */
 
@@ -1430,13 +1430,13 @@ void TriangleApplication::CreateSyncObjects() {
     // To achieve this, we add the VK_FENCE_CREATE_SIGNALED_BIT flag to the
     // VkFenceCreateInfo
 
-    // Describe fence information
+    // Describe the fence information
     VkFenceCreateInfo fence_info{};
     fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        // Create semaphores and fence
+        // Create semaphores and the fence
         if (vkCreateSemaphore(device, &semaphore_info, nullptr,
                               &image_available_semaphores[i]) != VK_SUCCESS ||
             vkCreateSemaphore(device, &semaphore_info, nullptr,
