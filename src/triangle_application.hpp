@@ -148,7 +148,8 @@ class TriangleApplication {
     void CreateSyncObjects();
     void RecreateSwapChain();
     void CleanupSwapChain();
-    static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
+    static void FramebufferResizeCallback(GLFWwindow* window, int width,
+                                          int height);
 
    public:
     void Run();
