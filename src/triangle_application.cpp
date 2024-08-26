@@ -1508,7 +1508,7 @@ void TriangleApplication::CleanupSwapChain() {
 
 void TriangleApplication::FramebufferResizeCallback(GLFWwindow* window,
                                                     int width, int height) {
-    auto app = reinterpret_cast<TriangleApplication*>(
+    auto *app = reinterpret_cast<TriangleApplication*>(
         glfwGetWindowUserPointer(window));
     app->framebuffer_resized = true;
 }
