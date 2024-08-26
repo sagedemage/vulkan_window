@@ -25,6 +25,9 @@ Checks:   '
           -cppcoreguidelines-pro-type-reinterpret-cast,
           -cppcoreguidelines-pro-type-union-access,
           -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+          -llvm-else-after-return,
+          -readability-else-after-return,
+          -bugprone-easily-swappable-parameters,
           '
 # Trojan Source
 # The misc-misleading-identifier, misc-homoglyph, and misc-misleading-bidirectional are
