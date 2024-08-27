@@ -23,35 +23,35 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPTIMIZE_FLAG} ${WARNING_FLAGS}")
 set(VULKAN_DIR "C:\\VulkanSDK\\1.3.290.0\\Lib\\cmake")
 set(VULKAN_INCLUDE_DIRS "C:\\VulkanSDK\\1.3.290.0\\Include")
 set(VULKAN_LIB_DIR "C:\\VulkanSDK\\1.3.290.0\\Lib")
-set(VULKAN_LIBS "C:\\VulkanSDK\\1.3.290.0\\Lib\\vulkan-1.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\dxcompiler.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\GenericCodeGen.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\glslang-default-resource-limits.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\glslang.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\MachineIndependent.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\OSDependent.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\shaderc.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\shaderc_combined.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\shaderc_shared.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\shaderc_util.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-c-shared.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-c.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-core.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-cpp.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-glsl.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-hlsl.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-msl.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-reflect.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\spirv-cross-util.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPIRV-Tools-diff.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPIRV-Tools-link.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPIRV-Tools-lint.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPIRV-Tools-opt.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPIRV-Tools-reduce.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPIRV-Tools-shared.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPIRV-Tools.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPIRV.lib"
-"C:\\VulkanSDK\\1.3.290.0\\Lib\\SPVRemapper.lib"
+set(VULKAN_LIBS "-lvulkan-1.lib"
+"-ldxcompiler.lib"
+"-lGenericCodeGen.lib"
+"-lglslang-default-resource-limits.lib"
+"-lglslang.lib"
+"-lMachineIndependent.lib"
+"-lOSDependent.lib"
+"-lshaderc.lib"
+"-lshaderc_combined.lib"
+"-lshaderc_shared.lib"
+"-lshaderc_util.lib"
+"-lspirv-cross-c-shared.lib"
+"-lspirv-cross-c.lib"
+"-lspirv-cross-core.lib"
+"-lspirv-cross-cpp.lib"
+"-lspirv-cross-glsl.lib"
+"-lspirv-cross-hlsl.lib"
+"-lspirv-cross-msl.lib"
+"-lspirv-cross-reflect.lib"
+"-lspirv-cross-util.lib"
+"-lSPIRV-Tools-diff.lib"
+"-lSPIRV-Tools-link.lib"
+"-lSPIRV-Tools-lint.lib"
+"-lSPIRV-Tools-opt.lib"
+"-lSPIRV-Tools-reduce.lib"
+"-lSPIRV-Tools-shared.lib"
+"-lSPIRV-Tools.lib"
+"-lSPIRV.lib"
+"-lSPVRemapper.lib"
 )
 
 # Set Directories for GLFW
@@ -70,6 +70,7 @@ set(GLM_LIB_DIR "C:\\vclib\\glm")
 find_package(Vulkan REQUIRED)
 
 include_directories(SYSTEM ${GLFW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS})
+link_directories(${VULKAN_LIB_DIR} ${GLFW_LIB_DIR} ${GLM_LIB_DIR})
 
 file(COPY src/shaders DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY lint_codebase.ps1 DESTINATION ${CMAKE_BINARY_DIR})
