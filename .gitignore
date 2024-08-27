@@ -442,3 +442,6 @@ build/
 
 # VS Code
 .vscode/
+
+# SPIR-V files
+*.spv
