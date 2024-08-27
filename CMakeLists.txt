@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPTIMIZE_FLAG} ${WARNING_FLAGS}")
 set(VULKAN_DIR "C:\\VulkanSDK\\1.3.290.0\\Lib\\cmake")
 set(VULKAN_INCLUDE_DIRS "C:\\VulkanSDK\\1.3.290.0\\Include")
 set(VULKAN_LIB_DIR "C:\\VulkanSDK\\1.3.290.0\\Lib")
-set(VULKAN_LIB "C:\\VulkanSDK\\1.3.290.0\\Lib\\vulkan-1.lib"
+set(VULKAN_LIBS "C:\\VulkanSDK\\1.3.290.0\\Lib\\vulkan-1.lib"
 "C:\\VulkanSDK\\1.3.290.0\\Lib\\dxcompiler.lib"
 "C:\\VulkanSDK\\1.3.290.0\\Lib\\GenericCodeGen.lib"
 "C:\\VulkanSDK\\1.3.290.0\\Lib\\glslang-default-resource-limits.lib"
@@ -58,16 +58,9 @@ set(VULKAN_LIB "C:\\VulkanSDK\\1.3.290.0\\Lib\\vulkan-1.lib"
 set(GLFW_INCLUDE_DIRS "C:\\vclib\\glfw-3.4.bin.WIN64\\include")
 set(GLFW_LIB_DIR "C:\\vclib\\glfw-3.4.bin.WIN64\\lib-vc2022")
 
-set(GLFW_LIB "C:\\vclib\\glfw-3.4.bin.WIN64\\lib-vc2022\\glfw3.lib" 
+set(GLFW_LIBS "C:\\vclib\\glfw-3.4.bin.WIN64\\lib-vc2022\\glfw3.lib"
 "C:\\vclib\\glfw-3.4.bin.WIN64\\lib-vc2022\\glfw3_mt.lib" 
 "C:\\vclib\\glfw-3.4.bin.WIN64\\lib-vc2022\\glfw3dll.lib"
-)
-
-# GLEW
-set(GLEW_INCLUDE_DIRS "C:\\vclib\\glew-2.1.0\\include")
-set(GLEW_LIB_DIR "C:\\vclib\\glew-2.1.0\\lib")
-set(GLEW_LIB "C:\\vclib\\glew-2.1.0\\lib\\Release\\x64\\glew32.lib"
-"C:\\vclib\\glew-2.1.0\\lib\\Release\\x64\\glew32s.lib"
 )
 
 # GLM
@@ -76,7 +69,7 @@ set(GLM_LIB_DIR "C:\\vclib\\glm")
 
 find_package(Vulkan REQUIRED)
 
-include_directories(SYSTEM ${GLFW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS})
+include_directories(SYSTEM ${GLFW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS})
 
 file(COPY src/shaders DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY lint_codebase.ps1 DESTINATION ${CMAKE_BINARY_DIR})
@@ -87,5 +80,5 @@ add_executable(VulkanWindow
 	src/triangle_application.hpp
 )
 
-target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB} ${GLFW_LIB})
+target_link_libraries(${PROJECT_NAME} ${VULKAN_LIBS} ${GLFW_LIBS})
 
