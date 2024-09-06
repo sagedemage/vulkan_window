@@ -139,19 +139,10 @@ void TriangleApplication::CreateInstance() {
     create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     create_info.pApplicationInfo = &app_info;
 
-    // Add an extension to inferface with the window system for GLFW
-    uint32_t glfw_extension_count = 0;
-    const char** glfw_extensions = nullptr;
-
-    // This function returns an array of required Vulkan instance extensions
-    // for creating Vulkan surfaces on GLFW windows
-    glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
-
-    create_info.enabledExtensionCount = glfw_extension_count;
-    create_info.ppEnabledExtensionNames = glfw_extensions;
-
     // Retreive the required list of extensions
     auto extensions = GetRequiredExtensions();
+
+    // Add the extensions to inferface with the window system for GLFW
     create_info.enabledExtensionCount =
         static_cast<uint32_t>(extensions.size());
     create_info.ppEnabledExtensionNames = extensions.data();
@@ -215,6 +206,9 @@ std::vector<const char*> TriangleApplication::GetRequiredExtensions() {
     validation layers are enabled or disabled */
     uint32_t glfw_extension_count = 0;
     const char** glfw_extensions = nullptr;
+
+    // This function returns an array of required Vulkan instance extensions
+    // for creating Vulkan surfaces on GLFW windows
     glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
     std::vector<const char*> extensions(glfw_extensions,
@@ -942,7 +936,7 @@ std::vector<char> TriangleApplication::ReadFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        throw std::runtime_error("failed to open file!");
+        throw std::runtime_error("failed to open file: " + filename + "!");
     }
 
     // determine the size of the file and allocate a buffer
