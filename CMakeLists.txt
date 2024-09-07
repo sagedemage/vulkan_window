@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.29)
 # Set the project Name
 project(VulkanWindow)
 
@@ -23,36 +23,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPTIMIZE_FLAG} ${WARNING_FLAGS}")
 set(VULKAN_DIR "C:\\VulkanSDK\\1.3.290.0\\Lib\\cmake")
 set(VULKAN_INCLUDE_DIRS "C:\\VulkanSDK\\1.3.290.0\\Include")
 set(VULKAN_LIB_DIR "C:\\VulkanSDK\\1.3.290.0\\Lib")
-set(VULKAN_LIBS "-lvulkan-1.lib"
-"-ldxcompiler.lib"
-"-lGenericCodeGen.lib"
-"-lglslang-default-resource-limits.lib"
-"-lglslang.lib"
-"-lMachineIndependent.lib"
-"-lOSDependent.lib"
-"-lshaderc.lib"
-"-lshaderc_combined.lib"
-"-lshaderc_shared.lib"
-"-lshaderc_util.lib"
-"-lspirv-cross-c-shared.lib"
-"-lspirv-cross-c.lib"
-"-lspirv-cross-core.lib"
-"-lspirv-cross-cpp.lib"
-"-lspirv-cross-glsl.lib"
-"-lspirv-cross-hlsl.lib"
-"-lspirv-cross-msl.lib"
-"-lspirv-cross-reflect.lib"
-"-lspirv-cross-util.lib"
-"-lSPIRV-Tools-diff.lib"
-"-lSPIRV-Tools-link.lib"
-"-lSPIRV-Tools-lint.lib"
-"-lSPIRV-Tools-opt.lib"
-"-lSPIRV-Tools-reduce.lib"
-"-lSPIRV-Tools-shared.lib"
-"-lSPIRV-Tools.lib"
-"-lSPIRV.lib"
-"-lSPVRemapper.lib"
-)
+set(VULKAN_LIB "vulkan-1.lib")
 
 # Set Directories for GLFW
 set(GLFW_INCLUDE_DIRS "C:\\vclib\\glfw-3.4.bin.WIN64\\include")
@@ -81,5 +52,5 @@ add_executable(VulkanWindow
 	src/triangle_application.hpp
 )
 
-target_link_libraries(${PROJECT_NAME} ${VULKAN_LIBS} ${GLFW_LIBS})
+target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB} ${GLFW_LIBS})
 
